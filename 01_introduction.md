@@ -1,33 +1,34 @@
-# 1.はじめに
+# 1.Introduction
 
-## 本ドキュメントのねらい
+## This document aims to
 
-網羅的に技術全般を扱う一般的な公式ドキュメントとは異なり、本ドキュメントは、素早く Symbol ブロックチェーンを活用する技術を身に着けていただくための解説書です。最初から読み進めていただければ、Symbol を活用したアプリ開発のための全体像を無理なく系統立てて学習できるように構成しています。  
-なお、ノードの構築方法やコンセンサスアルゴリズム、インセンティブ報酬などの説明はありません。
+This manual is designed to help you quickly learn the skills required for utilisation of the Symbol blockchain. Unlike general official documents that deal with the technology comprehensively, this document is structured in a way that if you read it from the beginning, you can learn the whole picture of utilisation of the Symbol blockchain for developing applications in a systematic way without difficulty.  
+Incidentally, this document does not refer to the following matters, the node hosting method, consensus algorithm and incentive rewards.
 
-## 本書の対象者
+## People subject to this document
 
-- ブロックチェーンを試してみたいけど、なにから勉強したらいいのかわからない方。
-- ブロックチェーンを覚えても、なにに使えるのかピンと来ない方。
-- Symbol の教材を作ろうとしてるけどどういう手順で教えたらいいのか悩んでいる方。
-- Symbol って簡単っていうけど、どういう感じで簡単なのかさくっと知りたい方。
+- Those who would like to give blockchain a try, but don't know where to start learning.
+- Those who learn about blockchain but still do not come to mind what it can be used for.
+- Those who are trying to create educational material on Symbol blockchain but are wondering what steps to take to educate it.
+- Those who want to know the point how it easy about the Symbol briefly, although the Symbol is often described as an easy to use blockchain.
 
-## 現場で使えるとは？
+## What does "practically" mean?
 
-ブロックチェーンを構成するデータの最小単位はお金ではなくタイムスタンプつき存在証明です。ここに注目すればブロックチェーンは認証やトレーサビリティなど、さらにその用途を広げることができます。 世の中を見渡せば、あらゆることが **信頼の数珠繋ぎ** で成り立っていることが分かります。その信頼を形にすることが困難なために、多くのことがお金に変換されて構築されてきました。
+The minimum unit of data that configures a blockchain is not a currency, but a proof of existence with a time stamp. With the focus here, blockchain can further expand its uses, such as authentication, traceability and much more. If you look around in the society, you can see that everything is **built on a connection based on trust**. Because of the difficulty in formalising that trust, a lot of things have been converted to currencies.
 
-今、ブロックチェーン技術によりその信頼をお金に変換することなく改ざん不可能な形で記録することができるようになりました。本ドキュメントは、金融だけではなくさらに多くのビジネスや文化の **「現場」** で活躍する人にブロックチェーンの力を活かすヒントを得てもらうために執筆しました。
+Today, blockchain technology makes it possible to record that trust in unfalsifiable forms without converting it into currencies. This document has been written to give people working **"practically "** on business and culture, not only in finance but also in many more fields, and tips on how to leverage the power of blockchain.
 
-## 「明日から」じゃなくて「今日から」使えるの意味
+## Meaning 'from today', not 'from tomorrow'
 
-昨今、IoT などの開発現場では **「もはや PoC すら必要ない」** と表現されることがあります。IT を構成する部品化が進み、試しに作ってみた装置がそのまま実運用を始めてしまえるほどにモジュール化されつつあります。Symbol ブロックチェーンもアプリケーションを構築するまでもなく、そして自分でノードを建てる必要もなく、設定したアカウントやトークンがコミュニティの提供するツール群でそのまま高セキュリティな情報基盤として活用できるプラットフォームとなっています。
+Recently, in the field of IoT and other developments, it is sometimes expressed that "No longer even a need for PoC". The IT components are becoming modulars. Modulations are bringing us the fact that even a trial device can be put into operation without any modification.
+The Symbol blockchain is also a platform which allows the configured accounts and tokens to be used as a highly secure intelligence infrastructure as it is, with an available suite of tools provided by the community, without the need to build own applications nor nodes .
 
-ぜひ、本ドキュメントでその可能性を感じていただければと思います。なお、各章の最後に載せた「現場で使えるヒント」は各機能の横断的な知識が必要になりますので最初は読み飛ばしていただいても大丈夫です。（いくつかの章の現場で使えるヒントは「現在執筆中」とさせていただいております。）
+I hope that this document will show you these possibilities. Please note that the 'Tips for use in the field' at the end of each chapter requires a cross-disciplinary knowledge of each function, so you can skip them at first.
 
-## Symbol ブロックチェーンでできないこと
+## What the Symbol blockchain doesn't have.
 
-他のチェーンで開発されてきた方のために、すこしだけ説明しておきます。
+For those who have developed in other chains, I leave a little explanation of it.
 
-Symbol ブロックチェーンにはコントラクトアカウントが存在しません。したがって、スマートコントラクトをデプロイするという発想がなく、すべてのスマートコントラクトは 1 回だけ実行されて、その効力を失います。そのため、デプロイレス・ワンタイムスマートコントラクトと表現されることもあります。
+The Symbol blockchain doesn't have any contract accounts. Therefore, there is no idea of deploying smart contracts, and all smart contracts functioning in Symbol are executed only once and lose their effect, hence sometimes described as a deployless one-time smart contract.
 
-デプロイ不要なため、任意の言語でスマートコントラクトを記述することができ、また、1 回限りの実行のため、不適切なループ制御などでネットワークのリソースを大量に消費したり、コントラクト内のロジックを再利用して悪用されるといった脆弱性を狙われることもありません。
+Since, as a deployless chain, the smart contracts can be written in any familiar language without the need to use a dedicated language for that, and as they are executed only once, it doesn't consume large amounts of network resources due to improper loop control, and also free from vulnerabilities by marcious abusing reuse of logic in the contract.

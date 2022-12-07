@@ -1,25 +1,25 @@
-# 2.環境構築
+# 2.Building a development environment
 
-本書の読み進め方について解説します。
+This section explains how to go on reading this document.
 
-## 2.1 使用言語
+## 2.1 Language
 
-JavaScript を使用します。
+Use JavaScript here.
 
 ### SDK
 
-symbol-sdk-typescript-javascript v2.0.3  
+symbol-sdk-typescript-javascript v2.0.0  
 https://github.com/symbol/symbol-sdk-typescript-javascript
 
-上記 SDK を browserify 化したものをブラウザの開発者コンソールに読み込ませて使用します。  
+Load The SDK above as browserify into the browser developer console.  
 https://github.com/xembook/nem2-browserify
 
-##### 注意
+##### Note
 
-現在 symbol-sdk v3.0.0 がアルファ版としてリリースされており、v 2.0.3 は deprecated です。  
-v3 では rxjs に依存した多くの機能が削除されるため、REST API への直接アクセスが推奨されます。
+Currently symbol-sdk v3.0.0 is released in alpha versiton, v 2.0.0 is deprecated  
+The v3 removed many of the rxjs-dependent features thus direct access to the REST API is recommended.
 
-### リファレンス
+### Reference
 
 Symbol SDK for TypeScript and JavaScript  
 https://symbol.github.io/symbol-sdk-typescript-javascript/1.0.3/
@@ -27,58 +27,58 @@ https://symbol.github.io/symbol-sdk-typescript-javascript/1.0.3/
 Catapult REST Endpoints (1.0.3)  
 https://symbol.github.io/symbol-openapi/v1.0.3/
 
-## 2.2 サンプルソースコード
+## 2.2 Sample source code
 
-### 変数宣言
+### Variable declaration
 
-console 上で何度も書き直して動作検証をして欲しいため、あえて const 宣言を行いません。  
-アプリケーション開発時は const 宣言するなどしてセキュリティを確保してください。
+In this document, we do not dare to declare const because we want you to rewrite it repeatedly on the console to verify that it works.  
+When developing applications, ensure security by declaring const.
 
-### 出力値確認
+### Check output value
 
-console.log()を変数の内容を出力します。好みに応じた出力関数に読み替えてお試しください。  
-出力内容は `>` 以下に記述しています。サンプルを実行する場合はこの部分を含まずに試してください。
+Console.log() outputs the contents of the variable. Try out the output functions according to your preferences.  
+The output is described under `>`. When Practicing with a sample, try it without this part.
 
-### 同期・非同期
+### Synchronous and asynchronous
 
-他言語に慣れた開発者の方には非同期処理の書き方に抵抗がある人もいると思うので、特に問題が無い限り非同期処理を使わずに解説します。
+Some developers used to other languages may feel uneasy with writing asynchronous processing, so unless there is a particular reason, the explanation is written without asynchronous processing.
 
-### アカウント
+### Account
 
 #### Alice
 
-本書では主に Alice アカウントを中心として解説します。  
-3 章で作成した Alice をその後の章でも引き続き使いますので、十分な XYM を送信した状態でお読みください。
+This manual focuses on the Alice account.  
+We will continue to use the Alice account which is created in chapter 3 in subsequent chapters. Please go on reading this manual with sufficient XYM sent.
 
 #### Bob
 
-Alice との送受信用のアカウントとして各章で必要に応じて作成します。その他、マルチシグの章などで Carol などを使用します。
+Bob is created as an account for sending and receiving with Alice, as required in the chapters. Others, such as Carol, are used in the multisig chapters.
 
-### 手数料
+### Fee
 
-本書で紹介するトランザクションの手数料乗数は 100 でトランザクションを作成します。
+In this document, transactions are created with a transaction fee multiplier of 100.
 
-## 2.3 事前準備
+## 2.3 Preparations in advance
 
-ノード一覧より任意のノードのページを Chrome ブラウザなどで開きます。本書ではテストネットを前提として解説しています。
+From the node list, open the page of any node with e.g. Chrome browser. This manual is based on the assumption of a testnet.
 
-- テストネット
+- Testnet
   - https://symbolnodes.org/nodes_testnet/
-- メインネット
+- Mainnet
   - https://symbolnodes.org/nodes/
 
-F12 キーを押して開発者コンソールを開き、以下のスクリプトを入力します。
+Press F12 to open the developer console, and enter the following script.
 
 ```js
 (script = document.createElement("script")).src =
-  "https://xembook.github.io/nem2-browserify/symbol-sdk-pack-2.0.3.js";
+  "https://xembook.github.io/nem2-browserify/symbol-sdk-pack-2.0.0.js";
 document.getElementsByTagName("head")[0].appendChild(script);
 ```
 
-続いて、ほぼすべての章で利用する共通ロジック部分を実行しておきます。
+Then, run the common logic that is used in almost all chapters.
 
 ```js
-NODE = window.origin; //現在開いているページのURLがここに入ります
+NODE = window.origin; //The URL of the page is showed in here.
 sym = require("/node_modules/symbol-sdk");
 repo = new sym.RepositoryFactoryHttp(NODE);
 txRepo = repo.createTransactionRepository();
@@ -87,7 +87,6 @@ txRepo = repo.createTransactionRepository();
   generationHash = await repo.getGenerationHash().toPromise();
   epochAdjustment = await repo.getEpochAdjustment().toPromise();
 })();
-
 function clog(signedTx) {
   console.log(NODE + "/transactionStatus/" + signedTx.hash);
   console.log(NODE + "/transactions/confirmed/" + signedTx.hash);
@@ -96,8 +95,8 @@ function clog(signedTx) {
 }
 ```
 
-これで準備完了です。
+You are now ready to go.
 
-本ドキュメントの内容が少し分かりにくい場合は Qiita 等の記事もご参考ください。
+If the content of this manual is a little confusing, please refer to the Qiita article.
 
 [Symbol ブロックチェーンのテストネットで送金を体験する](https://qiita.com/nem_takanobu/items/e2b1f0aafe7a2df0fe1b)
