@@ -1,170 +1,142 @@
-# 7.メタデータ
+# 7.Metadata
 
-アカウント・モザイク・ネームスペースに対して Key-Value 形式のデータを登録することができます。  
-Value の最大値は 1024 バイトです。
-本章ではモザイク・ネームスペースの作成アカウントとメタデータの作成アカウントがどちらも Alice であることを前提に説明します。
+Key-Value format data can be registerd for the account mosaic namespace. The maximum value is 1024 bytes.
+With the assumption that both mosaic namespace and account are created by Alice in this chapter.
 
-本章のサンプルスクリプトを実行する前に以下を実行して必要ライブラリを読み込んでおいてください。
-
+Before running the sample scripts in this chapter, please load the following libraries in advance.
 ```js
 metaRepo = repo.createMetadataRepository();
 mosaicRepo = repo.createMosaicRepository();
 metaService = new sym.MetadataTransactionService(metaRepo);
 ```
+## 7.1 Register for account
 
-## 7.1 アカウントに登録
-
-アカウントに対して、Key-Value 値を登録します。
+Register a Key-Value for the account.
 
 ```js
 key = sym.KeyGenerator.generateUInt64Key("key_account");
 value = "test";
 
-tx = await metaService
-  .createAccountMetadataTransaction(
+tx = await metaService.createAccountMetadataTransaction(
     undefined,
     networkType,
-    alice.address, //メタデータ記録先アドレス
-    key,
-    value, //Key-Value値
-    alice.address //メタデータ作成者アドレス
-  )
-  .toPromise();
+    alice.address, //Metadata registration destination address
+    key,value, //Key-Value
+    alice.address //Metadata creator address
+).toPromise();
 
 aggregateTx = sym.AggregateTransaction.createComplete(
   sym.Deadline.create(epochAdjustment),
   [tx.toAggregate(alice.publicAccount)],
-  networkType,
-  []
+  networkType,[]
 ).setMaxFeeForAggregate(100, 0);
 
-signedTx = alice.sign(aggregateTx, generationHash);
+signedTx = alice.sign(aggregateTx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-メタデータの登録には記録先アカウントが承諾を示す署名が必要です。
-また、記録先アカウントと記録者アカウントが同一でもアグリゲートトランザクションにする必要があります。
+Registration of metadata requires a signature of the account to which it is recorded.
+Even if the registration destination account and the sender account are the same, an aggregate transaction is required.
 
-異なるアカウントのメタデータに登録する場合は署名時に
-signTransactionWithCosignatories を使用します。
+When registering the metadata to different accounts, use "signTransactionWithCosignatories" to sign it.
 
 ```js
-tx = await metaService
-  .createAccountMetadataTransaction(
+tx = await metaService.createAccountMetadataTransaction(
     undefined,
     networkType,
-    bob.address, //メタデータ記録先アドレス
-    key,
-    value, //Key-Value値
-    alice.address //メタデータ作成者アドレス
-  )
-  .toPromise();
+    bob.address, //Metadata registration destination address
+    key,value, //Key-Value
+    alice.address //Metadata creator address
+).toPromise();
 
 aggregateTx = sym.AggregateTransaction.createComplete(
   sym.Deadline.create(epochAdjustment),
   [tx.toAggregate(alice.publicAccount)],
-  networkType,
-  []
-).setMaxFeeForAggregate(100, 1); // 第二引数に連署者の数:1
+  networkType,[]
+).setMaxFeeForAggregate(100, 1); // Number of co-signer to second argument: 1
 
 signedTx = aggregateTx.signTransactionWithCosignatories(
-  alice,
-  [bob],
-  generationHash // 第二引数に連署者
+  alice,[bob],generationHash,// Co-signer to second argument
 );
 await txRepo.announce(signedTx).toPromise();
 ```
 
-bob の秘密鍵が分からない場合はこの後の章で説明する
-アグリゲートボンデッドトランザクション、あるいはオフライン署名を使用する必要があります。
+In case you don't know the bob's private key, Aggregate Bonded Transactions which is explained in the chapters that follow or offline signing must be used.
 
-## 7.2 モザイクに登録
+## 7.2 Register for mosaic
 
-ターゲットとなるモザイクに対して、Key 値・ソースアカウントの複合キーで Value 値を登録します。
-登録・更新にはモザイクを作成したアカウントの署名が必要です。
+Register a Value with the composite key of the Key value/source account for the target mosaic.
+The signature of the account that created the mosaic is required for registration and update.
 
 ```js
 mosaicId = new sym.MosaicId("1275B0B7511D9161");
 mosaicInfo = await mosaicRepo.getMosaic(mosaicId).toPromise();
 
-key = sym.KeyGenerator.generateUInt64Key("key_mosaic");
-value = "test";
+key = sym.KeyGenerator.generateUInt64Key('key_mosaic');
+value = 'test';
 
-tx = await metaService
-  .createMosaicMetadataTransaction(
-    undefined,
-    networkType,
-    mosaicInfo.ownerAddress, //モザイク作成者アドレス
-    mosaicId,
-    key,
-    value, //Key-Value値
-    alice.address
-  )
-  .toPromise();
+tx = await metaService.createMosaicMetadataTransaction(
+  undefined,
+  networkType,
+  mosaicInfo.ownerAddress, //Mosaic creator address
+  mosaicId,
+  key,value, //Key-Value
+  alice.address
+).toPromise();
 
 aggregateTx = sym.AggregateTransaction.createComplete(
-  sym.Deadline.create(epochAdjustment),
-  [tx.toAggregate(alice.publicAccount)],
-  networkType,
-  []
+    sym.Deadline.create(epochAdjustment),
+    [tx.toAggregate(alice.publicAccount)],
+    networkType,[]
 ).setMaxFeeForAggregate(100, 0);
 
-signedTx = alice.sign(aggregateTx, generationHash);
+signedTx = alice.sign(aggregateTx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-## 7.3 ネームスペースに登録
+## 7.3 Register for namespace
 
-ネームスペースに対して、Key-Value 値を登録します。
-登録・更新にはネームスペースを作成したアカウントの署名が必要です。
+Register a Key-Value for the namespace.
+The signature of the account that created the mosaic is required for registration and update.
+
 
 ```js
 nsRepo = repo.createNamespaceRepository();
 namespaceId = new sym.NamespaceId("xembook");
 namespaceInfo = await nsRepo.getNamespace(namespaceId).toPromise();
 
-key = sym.KeyGenerator.generateUInt64Key("key_namespace");
-value = "test";
+key = sym.KeyGenerator.generateUInt64Key('key_namespace');
+value = 'test';
 
-tx = await metaService
-  .createNamespaceMetadataTransaction(
-    undefined,
-    networkType,
-    namespaceInfo.ownerAddress, //ネームスペースの作成者アドレス
+tx = await metaService.createNamespaceMetadataTransaction(
+    undefined,networkType,
+    namespaceInfo.ownerAddress, //Namespace creator address
     namespaceId,
-    key,
-    value, //Key-Value値
-    alice.address //メタデータの登録者
-  )
-  .toPromise();
+    key,value, //Key-Value
+    alice.address //Metadata registrant
+).toPromise();
 
 aggregateTx = sym.AggregateTransaction.createComplete(
-  sym.Deadline.create(epochAdjustment),
-  [tx.toAggregate(alice.publicAccount)],
-  networkType,
-  []
+    sym.Deadline.create(epochAdjustment),
+    [tx.toAggregate(alice.publicAccount)],
+    networkType,[]
 ).setMaxFeeForAggregate(100, 0);
 
-signedTx = alice.sign(aggregateTx, generationHash);
+signedTx = alice.sign(aggregateTx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-## 7.4 確認
-
-登録したメタデータを確認します。
+## 7.4 Confirmation
+Confirm the registered metadata.
 
 ```js
-res = await metaRepo
-  .search({
-    targetAddress: alice.address,
-    sourceAddress: alice.address,
-  })
-  .toPromise();
+res = await metaRepo.search({
+  targetAddress:alice.address,
+  sourceAddress:alice.address}
+).toPromise();
 console.log(res);
 ```
-
-###### 出力例
-
+###### Sample outlet
 ```js
 data: Array(3)
   0: Metadata
@@ -200,32 +172,26 @@ data: Array(3)
       id: Id {lower: 646738821, higher: 2754876907}
       value: "test"
 ```
-
-metadataType は以下の通りです。
-
+The metadataType is as follows.
 ```js
 sym.MetadataType
 {0: 'Account', 1: 'Mosaic', 2: 'Namespace'}
 ```
 
-### 注意事項
+### Note
+While metadata has the advantage of providing quick access to information by Key-Value, it should be noted that it needs updating.
+Updating requires the signatures of the issuer account and the account to which it is registered, so it is better only be used if both accounts can be trusted.
 
-メタデータはキー値で素早く情報にアクセスできるというメリットがある一方で更新可能であることに注意しておく必要があります。
-更新には、発行者アカウントと登録先アカウントの署名が必要のため、それらのアカウントの管理状態が信用できる場合のみ使用するようにしてください。
 
-## 7.5 現場で使えるヒント
+## 7.5 Tips for use
 
-### 有資格証明
+### Proof of eligibility
 
-モザイクの章で所有証明、ネームスペースの章でドメインリンクの説明をしました。
-実社会で信頼性の高いドメインからリンクされたアカウントが発行したメタデータの付与を受けることで
-そのドメイン内での有資格情報の所有を証明することができます。
+We described proof of ownership in the Mosaic chapter and domain linking in the Namespace chapter.
+By receiving a metadata issued by an account linked from a reliable domain can be used for proofing of ownership of eligibility within that domain.
 
-#### DID
+#### DID (Decentralized identity)
 
-分散型アイデンティティと呼ばれます。
-エコシステムは発行者、所有者、検証者に分かれ、例えば大学が発行した卒業証書を学生が所有し、
-企業は学生から提示された証明書を大学が公表している公開鍵をもとに検証します。
-このやりとりにプラットフォームに依存する情報はありません。
-メタデータを活用することで、大学は学生の所有するアカウントにメタデータを発行することができ、
-企業は大学の公開鍵と学生のモザイク(アカウント)所有証明でメタデータに記載された卒業証明を検証することができます。
+The ecosystem is divided into issuers, owners and verifiers, e.g. students own the diplomas issued by universities, and companies verify the certificates presented by the students based on the public keys published by the universities.
+There is no platform-dependent or third party-dependent information for this verification.
+By utilising metadata in this way, universities can issue metadata to accounts owned by students, and companies can verify the proof of graduation listed in the metadata with the university's public key and the student's mosaic (account) proof of ownership.
