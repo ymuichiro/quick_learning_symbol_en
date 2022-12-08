@@ -6,6 +6,10 @@
 
 ### XEMBook
 
+## 他言語版
+
+[日本語](https://learn.ja.symbol-community.com)
+
 ## 目次
 
 ### [1.はじめに](./01_introduction.md)
