@@ -1,122 +1,110 @@
-# 4.トランザクション
+# 4.Transaction
+Updating datas on the blockchain is done by announcing transactions to the network.
 
-ブロックチェーン上のデータ更新はトランザクションをネットワークにアナウンスすることによって行います。
+## 4.1 Transaction lifecycle
 
-## 4.1 トランザクションのライフサイクル
+Describing the steps below from the creation of the transaction until the data becomes difficult to tamper with.
 
-トランザクションを作成してから、改ざんが困難なデータとなるまでを順に説明します。
+- Transaction creation
+  - Create transactions in an acceptable format to the blockchain.
+- Signature
+  - Sign with the transaction with the account's privatekey.
+- Announcement
+  - Announce a signed transaction to any node.
+- Unconfirmed state transactions
+  - Transactions accepted by a node are propagated to all nodes as unconfirmed state transactions.
+    - In a case where the maximum fee set for a transaction is not enough for the minimum fee set for each node, it will not be propagated to that node.
+- Confirmed transaction
+  - When an unconfirmed transaction is contained in a subsequent new block which is generated approximately every 30 seconds, it becomes an approved transaction.
+- Rollbacks
+  - Transactions could not reach a consensus agreement between nodes are rollebacked to unconfirmed state.
+    - Transactions that have expired or overflowed the cache are truncated.
+- Finalise
+  - Once the block is finalised by the finalisation process by the voting node, the transaction can be treated as non-rollbackable data.
 
-- トランザクション作成
-  - ブロックチェーンが受理できるフォーマットでトランザクションを作成します。
-- 署名
-  - アカウントの秘密鍵でトランザクションを署名します。
-- アナウンス
-  - 任意のノードに署名済みトランザクションを通知します。
-- 未承認トランザクション
-  - ノードに受理されたトランザクションは、未承認トランザクションとして全ノードに伝播します
-    - トランザクションに設定した最大手数料が、各ノード毎に設定されている最低手数料を満たさない場合はそのノードへは伝播しません。
-- 承認済みトランザクション
-  - 約 30 秒に 1 度ごとに生成されるブロックに未承認トランザクションが取り込まれると、承認済みトランザクションとなります。
-- ロールバック
-  - ノード間の合意に達することができずロールバックされたブロックに含まれていたトランザクションは、未承認トランザクションに差し戻されます。
-    - 有効期限切れや、キャッシュからあふれたトランザクションは切り捨てられます。
-- ファイナライズ
-  - 投票ノードによるファイナライズプロセスによりブロックが確定するとトランザクションはロールバック不可なデータとして扱うことができます。
+### What is a block?
 
-### ブロックとは
+Blocks are generated approximately every 30 seconds, with priority given to transactions that have paid higher fees, and are synchronised with other nodes on a block-by-block basis.
+If synchronisation fails, it is rollbacked and the network repeats this process until consensus agreement is reached across the board.
 
-ブロックは約 30 秒ごとに生成され、高い手数料を支払ったトランザクションから優先に取り込まれ、ブロック単位で他のノードと同期します。
-同期に失敗するとロールバックして、ネットワークが全体で合意が取れるまでこの作業を繰り返します。
 
-## 4.2 トランザクション作成
+## 4.2 Transaction creation
 
-まずは最も基本的な転送トランザクションを作成してみます。
+First of all, start with creating the most basic transfer transaction.
 
-### Bob への転送トランザクション
+### Transfer transaction to Bob
 
-送信先の Bob アドレスを作成しておきます。
-
+Create the Bob address to send.
 ```js
 bob = sym.Account.generateNewAccount(networkType);
 console.log(bob.address);
 ```
-
 ```js
 > Address {address: 'TDWBA6L3CZ6VTZAZPAISL3RWM5VKMHM6J6IM3LY', networkType: 152}
 ```
 
-トランザクションを作成します。
-
+Create transaction.
 ```js
 tx = sym.TransferTransaction.create(
-  sym.Deadline.create(epochAdjustment), //Deadline:有効期限
-  sym.Address.createFromRawAddress("TDWBA6L3CZ6VTZAZPAISL3RWM5VKMHM6J6IM3LY"),
-  [],
-  sym.PlainMessage.create("Hello Symbol!"), //メッセージ
-  networkType //テストネット・メインネット区分
-).setMaxFee(100); //手数料
+    sym.Deadline.create(epochAdjustment), //Deadline:Expiry date
+    sym.Address.createFromRawAddress("TDWBA6L3CZ6VTZAZPAISL3RWM5VKMHM6J6IM3LY"), 
+    [],
+    sym.PlainMessage.create("Hello Symbol!"), //Message
+    networkType //Testnet/Mainnet classification
+).setMaxFee(100); //Fees
 ```
 
-各設定項目について説明します。
+Each setting is explained below.
 
-#### 有効期限
-
-sdk ではデフォルトで 2 時間後に設定されます。
-最大 6 時間まで指定可能です。
-
+#### Expiry date
+2 hours is the sdk's default setting. 
+A maximum of 6 hours can be specified.
 ```js
-sym.Deadline.create(epochAdjustment, 6);
+sym.Deadline.create(epochAdjustment,6)
 ```
 
-#### メッセージ
+#### Message
+In a message field, up to 1023 bytes can be attached to a transaction.
+Also binary data can be sent as raw data.
 
-トランザクションに最大 1023 バイトのメッセージを添付することができます。
-バイナリデータであっても rawdata として送信することが可能です。
-
-##### 空メッセージ
-
+##### Empty message
 ```js
-sym.EmptyMessage;
+sym.EmptyMessage
 ```
 
-##### 平文メッセージ
-
+##### Plain message
 ```js
-sym.PlainMessage.create("Hello Symbol!");
+sym.PlainMessage.create("Hello Symbol!")
 ```
 
-##### 暗号文メッセージ
-
+##### Encrypted message
 ```js
-sym.EncryptedMessage(
-  "294C8979156C0D941270BAC191F7C689E93371EDBC36ADD8B920CF494012A97BA2D1A3759F9A6D55D5957E9D"
-);
+sym.EncryptedMessage('294C8979156C0D941270BAC191F7C689E93371EDBC36ADD8B920CF494012A97BA2D1A3759F9A6D55D5957E9D');
 ```
 
-EncryptedMessage を使用すると、「指定したメッセージが暗号化されています」という意味のフラグ（目印）がつきます。
-エクスプローラーやウォレットはそのフラグを参考にメッセージを無用にデコードしなかったり、非表示にしたりなどの処理を行います。
-このメソッドが暗号化をするわけではありません。
+When you use EncryptedMessage, a flag (marker) is attached to the message that means 'the specified message is encrypted'.
+Explorer and Wallet will use the flag as a reference to hide it or not decode the message, etc.
+Encryption is not made by the method itself.
 
-##### 生データ
 
+##### Raw data
 ```js
-sym.RawMessage.create(uint8Arrays[i]);
+sym.RawMessage.create(uint8Arrays[i])
 ```
 
-#### 最大手数料
+#### Maximum fee
 
-ネットワーク手数料については、常に少し多めに払っておけば問題はないのですが、最低限の知識は持っておく必要があります。
-アカウントはトランザクションを作成するときに、ここまでは手数料として払ってもいいという最大手数料を指定します。
-一方で、ノードはその時々で最も高い手数料となるトランザクションのみブロックにまとめて収穫しようとします。
-つまり、多く払ってもいいというトランザクションが他に多く存在すると承認されるまでの時間が長くなります。
-逆に、より少なく払いたいというトランザクションが多く存在し、その総額が大きい場合は、設定した最大額に満たない手数料額で送信が実現します。
+Although to ensure a transaction, paying a little more fee is better, having some knowledge about network fees is a good idea.
+The account specifies the maximum fee it is  acceptable to pay when it creates the transaction.
+On the other hand, nodes try to harvest only the transactions with the highest fees into a block at time.
+This means that if there are many other transactions that are willing to pay more, the transaction will take longer to be approved.
+Conversely, if there are many transactions that want to pay less and the total amount is large, the transaction will be achieved with fees that are less than the maximum you set.
 
-トランザクションサイズ x feeMultipriler というもので決定されます。
-176 バイトだった場合 maxFee を 100 で設定すると 17600μXYM = 0.0176XYM を手数料として支払うことを許容します。
-feeMultiprier = 100 として指定する方法と maxFee = 17600 として指定する方法があります。
+It is determined by a transaction size x feeMultipriler.
+If it was 176 bytes and maxFee is set at 100, 17600µXYM = 0.0176XYM is allowed to be paid as a fee.
+There are two ways to specify this: as feeMultiplier = 100 or as maxFee = 17600.
 
-##### feeMultiprier = 100 として指定する方法
-
+##### To specify as feeMultiprier = 100
 ```js
 tx = sym.TransferTransaction.create(
   ,,,,
@@ -124,8 +112,7 @@ tx = sym.TransferTransaction.create(
 ).setMaxFee(100);
 ```
 
-##### maxFee = 17600 として指定する方法
-
+##### To specify as maxFee = 17600
 ```js
 tx = sym.TransferTransaction.create(
   ,,,,
@@ -134,81 +121,73 @@ tx = sym.TransferTransaction.create(
 );
 ```
 
-本書では以後、feeMultiprier = 100 として指定する方法で統一して説明します。
+We will use the specified method of specifying feeMultiprier = 100.
 
-## 4.3 署名とアナウンス
+## 4.3 Signature and announcement
 
-作成したトランザクションを秘密鍵で署名して、任意のノードを通じてアナウンスします。
+Sign the transaction which you create with the private key and announce it through any node.
 
-### 署名
-
+### Signature
 ```js
-signedTx = alice.sign(tx, generationHash);
+signedTx = alice.sign(tx,generationHash);
 console.log(signedTx);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > SignedTransaction
     hash: "3BD00B0AF24DE70C7F1763B3FD64983C9668A370CB96258768B715B117D703C2"
     networkType: 152
-    payload:
+    payload:        
 "AE00000000000000CFC7A36C17060A937AFE1191BC7D77E33D81F3CC48DF9A0FFE892858DFC08C9911221543D687813ECE3D36836458D2569084298C09223F9899DF6ABD41028D0AD4933FC1E4C56F9DF9314E9E0533173E1AB727BDB2A04B59F048124E93BEFBD20000000001985441F843000000000000879E76C702000000986F4982FE77894ABC3EBFDC16DFD4A5C2C7BC05BFD44ECE0E000000000000000048656C6C6F2053796D626F6C21"
     signerPublicKey: "D4933FC1E4C56F9DF9314E9E0533173E1AB727BDB2A04B59F048124E93BEFBD2"
     type: 16724
 ```
 
-トランザクションの署名には Account クラスと generationHash 値が必要です。
+The Account class and generationHash value are required to sign the transaction.
 
 generationHash
+- Testnet
+    - 7FCCD304802016BEBBCD342A332F91FF1F3BB5E902988B352697BE245F48E836
+- Mainnet
+    - 57F7DA205008026C776CB6AED843393F04CD458E0AA2D9F1D5F31A402072B2D6
 
-- テストネット
-  - 7FCCD304802016BEBBCD342A332F91FF1F3BB5E902988B352697BE245F48E836
-- メインネット
-  - 57F7DA205008026C776CB6AED843393F04CD458E0AA2D9F1D5F31A402072B2D6
+The generationHash value uniquely identifies the blockchain network.
+A signed transaction is created by interweaving the network's individual hash values so that they cannot be used by other networks with the same private key.
 
-generationHash 値はそのブロックチェーンネットワークを一意に識別するための値です。
-同じ秘密鍵をもつ他のネットワークに使いまわされないようにそのネットワーク個別のハッシュ値を織り交ぜて署名済みトランザクションを作成します。
 
-### アナウンス
-
+### Announcement
 ```js
 res = await txRepo.announce(signedTx).toPromise();
 console.log(res);
 ```
-
 ```js
 > TransactionAnnounceResponse {message: 'packet 9 was pushed to the network via /transactions'}
 ```
 
-上記のスクリプトのように `packet n was pushed to the network` というレスポンスがあれば、トランザクションはノードに受理されたことになります。
-これはトランザクションのフォーマット等に異常が無かった程度の意味しかありません。
-Symbol ではノードの応答速度を極限に高めるため、トランザクションの内容を検証するまえに受信結果の応答を返し接続を切断します。
-レスポンス値はこの情報を受け取ったにすぎません。フォーマットに異常があった場合は以下のようなメッセージ応答があります。
+As in the script above, a response has `packet n was pushed to the network`, the transaction has been accepted by the node.
+This only means to the extent that there were no anomalies in the formatting of the transaction.
+In order to maximise the response speed of the node, Symbol returns the response of the received result and disconnects the connection before verifying the content of the transaction.
+The response value is merely the receipt of this information. If there is an error in the format, the message response will be as follows.
 
-##### アナウンスに失敗した場合の応答例
 
+##### Sample output of response if announcement fails
 ```js
 Uncaught Error: {"statusCode":409,"statusMessage":"Unknown Error","body":"{\"code\":\"InvalidArgument\",\"message\":\"payload has an invalid format\"}"}
 ```
 
-## 4.4 確認
+## 4.4 Confirmation
 
-### ステータスの確認
 
-ノードに受理されたトランザクションのステータスを確認
+### Status confirmation
+
+Confirm the status of transactions accepted by the node.
 
 ```js
 tsRepo = repo.createTransactionStatusRepository();
-transactionStatus = await tsRepo
-  .getTransactionStatus(signedTx.hash)
-  .toPromise();
+transactionStatus = await tsRepo.getTransactionStatus(signedTx.hash).toPromise();
 console.log(transactionStatus);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > TransactionStatus
     group: "confirmed"
@@ -218,9 +197,9 @@ console.log(transactionStatus);
     height: undefined
 ```
 
-承認されると ` group: "confirmed"`となっています。
+When it is approved, the output shows  ` group: "confirmed"` .
 
-受理されたものの、エラーが発生していた場合は以下のような出力となります。トランザクションを書き直して再度アナウンスしてみてください。
+If it was accepted but an error occurred, the output will show as follows. Rewrite the transaction and try announcing it again.
 
 ```js
 > TransactionStatus
@@ -231,47 +210,39 @@ console.log(transactionStatus);
     height: undefined
 ```
 
-以下のように ResourceNotFound エラーが発生した場合はトランザクションが受理されていません。
-
+If the transaction has not been accepted, the output will show the ResourceNotFound error as follows.
 ```js
 Uncaught Error: {"statusCode":404,"statusMessage":"Unknown Error","body":"{\"code\":\"ResourceNotFound\",\"message\":\"no resource exists with id '18AEBC9866CD1C15270F18738D577CB1BD4B2DF3EFB28F270B528E3FE583F42D'\"}"}
 ```
 
-考えられる可能性としては、トランザクションで指定した最大手数料が、ノードで設定された最低手数料に満たない場合や、
-アグリゲートトランザクションとしてアナウンスすることが求められているトランザクションを単体のトランザクションでアナウンスした場合に発生するようです。
+This error seems occur when the maximum fee specified in the transaction is less than the minimum fee set by the node, or a transaction that is required to be announced as an aggregate transaction is announced as a single transaction.
 
-### 承認確認
+### Approval Confirmation
 
-トランザクションがブロックに承認されるまでに 30 秒程度かかります。
+It takes around 30 seconds for a transaction to be approved for the block.
 
-#### エクスプローラーで確認
-
-signedTx.hash で取得できるハッシュ値を使ってエクスプローラーで検索してみましょう。
+#### Check with the Explorer
+Search in Explorer using the hash value that can be retrieved with signedTx.hash.
 
 ```js
 console.log(signedTx.hash);
 ```
-
 ```js
 > "661360E61C37E156B0BE18E52C9F3ED1022DCE846A4609D72DF9FA8A5B667747"
 ```
 
-- メインネット
+- Mainnet　
   - https://symbol.fyi/transactions/661360E61C37E156B0BE18E52C9F3ED1022DCE846A4609D72DF9FA8A5B667747
-- テストネット
+- Testnet　
   - https://testnet.symbol.fyi/transactions/661360E61C37E156B0BE18E52C9F3ED1022DCE846A4609D72DF9FA8A5B667747
 
-#### SDK で確認
+#### Check with the SDK
 
 ```js
-txInfo = await txRepo
-  .getTransaction(signedTx.hash, sym.TransactionGroup.Confirmed)
-  .toPromise();
+txInfo = await txRepo.getTransaction(signedTx.hash,sym.TransactionGroup.Confirmed).toPromise();
 console.log(txInfo);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > TransferTransaction
     deadline: Deadline {adjustedValue: 12883929118}
@@ -292,49 +263,41 @@ console.log(txInfo);
     type: 16724
     version: 1
 ```
+##### Points to note
 
-##### 注意点
+Even when a transaction is confirmed in a block, the confirmation of the transaction still has a possibility of revoke if a rollback occurs.
+After a block has been approved, the probability of a rollback occurring decreases as the approval proceeds for several blocks.
+In addition, waiting for the finalisation block, which is carried out by voting on the Voting nodes, ensures that the recorded data is certain.
 
-トランザクションはブロックで承認されたとしても、ロールバックが発生するとトランザクションの承認が取り消される場合があります。
-ブロックが承認された後、数ブロックの承認が進むと、ロールバックの発生する確率は減少していきます。
-また、Voting ノードの投票で実施されるファイナライズブロックを待つことで、記録されたデータは確実なものとなります。
-
-##### スクリプト例
-
-トランザクションをアナウンスした後は以下のようなスクリプトを流すと、チェーンの状態を把握しやすくて便利です。
-
+##### Sample script
+After announcing the transaction, it is useful to see the following script to keep track of the chain status.
 ```js
 hash = signedTx.hash;
 tsRepo = repo.createTransactionStatusRepository();
 transactionStatus = await tsRepo.getTransactionStatus(hash).toPromise();
 console.log(transactionStatus);
-txInfo = await txRepo
-  .getTransaction(hash, sym.TransactionGroup.Confirmed)
-  .toPromise();
+txInfo = await txRepo.getTransaction(hash,sym.TransactionGroup.Confirmed).toPromise();
 console.log(txInfo);
 ```
 
-## 4.5 トランザクション履歴
+## 4.5 Transaction history
 
-Alice が送受信したトランザクション履歴を一覧で取得します。
-
+Get a list of the transaction history sent and received by Alice.
 ```js
-result = await txRepo
-  .search({
-    group: sym.TransactionGroup.Confirmed,
-    embedded: true,
-    address: alice.address,
-  })
-  .toPromise();
+result = await txRepo.search(
+  {
+    group:sym.TransactionGroup.Confirmed,
+    embedded:true,
+    address:alice.address
+  }
+).toPromise();
 
 txes = result.data;
-txes.forEach((tx) => {
+txes.forEach(tx => {
   console.log(tx);
-});
+})
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > TransferTransaction
     type: 16724
@@ -361,110 +324,104 @@ txes.forEach((tx) => {
       merkleComponentHash: "308472D34BE1A58B15A83B9684278010F2D69B59E39127518BE38A4D22EEF31D"
 ```
 
-TransactionType は以下の通りです。
-
+TransactionType is as follows.
 ```js
 {0: 'RESERVED', 16705: 'AGGREGATE_COMPLETE', 16707: 'VOTING_KEY_LINK', 16708: 'ACCOUNT_METADATA', 16712: 'HASH_LOCK', 16716: 'ACCOUNT_KEY_LINK', 16717: 'MOSAIC_DEFINITION', 16718: 'NAMESPACE_REGISTRATION', 16720: 'ACCOUNT_ADDRESS_RESTRICTION', 16721: 'MOSAIC_GLOBAL_RESTRICTION', 16722: 'SECRET_LOCK', 16724: 'TRANSFER', 16725: 'MULTISIG_ACCOUNT_MODIFICATION', 16961: 'AGGREGATE_BONDED', 16963: 'VRF_KEY_LINK', 16964: 'MOSAIC_METADATA', 16972: 'NODE_KEY_LINK', 16973: 'MOSAIC_SUPPLY_CHANGE', 16974: 'ADDRESS_ALIAS', 16976: 'ACCOUNT_MOSAIC_RESTRICTION', 16977: 'MOSAIC_ADDRESS_RESTRICTION', 16978: 'SECRET_PROOF', 17220: 'NAMESPACE_METADATA', 17229: 'MOSAIC_SUPPLY_REVOCATION', 17230: 'MOSAIC_ALIAS', 17232: 'ACCOUNT_OPERATION_RESTRICTION'
 ```
 
-MessageType は以下の通りです。
-
+MessageType is as follows.
 ```js
 {0: 'PlainMessage', 1: 'EncryptedMessage', 254: 'PersistentHarvestingDelegationMessage', -1: 'RawMessage'}
 ```
+## 4.6 Aggregate Transactions
 
-## 4.6 アグリゲートトランザクション
+Aggregate transactions can announce merging multiple transactions into one.
+Symbol’s public network supports aggregate transaction containing up to 100 inner transactions (involving up to 25 different cosignatories).
+The content covered in subsequent chapters includes functions that require an understanding of aggregate transactions.
+This chapter introduces only the simplest of aggregate transactions.
 
-Symbol では複数のトランザクションを 1 ブロックにまとめてアナウンスすることができます。
-最大で 100 件のトランザクションをまとめることができます（連署者が異なる場合は 25 アカウントまでを連署指定可能）。
-以降の章で扱う内容にアグリゲートトランザクションへの理解が必要な機能が含まれますので、
-本章ではアグリゲートトランザクションのうち、簡単なものだけを紹介します。
-
-### 起案者の署名だけが必要な場合
+### A case only the signature of the originator is required
 
 ```js
 bob = sym.Account.generateNewAccount(networkType);
 carol = sym.Account.generateNewAccount(networkType);
 
 innerTx1 = sym.TransferTransaction.create(
-  undefined, //Deadline
-  bob.address, //送信先
-  [],
-  sym.PlainMessage.create("tx1"),
-  networkType
+    undefined, //Deadline
+    bob.address,  //Destination of the transaction
+    [],
+    sym.PlainMessage.create("tx1"),
+    networkType
 );
 
 innerTx2 = sym.TransferTransaction.create(
-  undefined, //Deadline
-  carol.address, //送信先
-  [],
-  sym.PlainMessage.create("tx2"),
-  networkType
+    undefined, //Deadline
+    carol.address,  //Destination of the transaction
+    [],
+    sym.PlainMessage.create("tx2"),
+    networkType
 );
 
 aggregateTx = sym.AggregateTransaction.createComplete(
-  sym.Deadline.create(epochAdjustment),
-  [
-    innerTx1.toAggregate(alice.publicAccount), //送信元アカウントの公開鍵
-    innerTx2.toAggregate(alice.publicAccount), //送信元アカウントの公開鍵
-  ],
-  networkType,
-  [],
-  sym.UInt64.fromUint(1000000)
+    sym.Deadline.create(epochAdjustment),
+    [
+      innerTx1.toAggregate(alice.publicAccount), //Publickey of the sender account
+      innerTx2.toAggregate(alice.publicAccount)  //Publickey of the sender account
+    ],
+    networkType,
+    [],
+    sym.UInt64.fromUint(1000000)
 );
-signedTx = alice.sign(aggregateTx, generationHash);
+signedTx = alice.sign(aggregateTx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-まず、アグリゲートトランザクションに含めるトランザクションを作成します。
-このとき Deadline を指定する必要はありません。
-リスト化するときに、生成したトランザクションに toAggregate を追加して送信元アカウントの公開鍵を指定します。
-ちなみに送信元アカウントと署名アカウントが **必ずしも一致するとは限りません** 。
-後の章での解説で「Bob の送信トランザクションを Alice が署名する」といった事が起こり得るためこのような書き方をします。
-これは Symbol ブロックチェーンでトランザクションを扱ううえで最も重要な概念になります。
-なお、本章で扱うトランザクションは同じ Alice ですので、アグリゲートボンデッドトランザクションへの署名も Alice を指定します。
+First, create the transactions to be included in the aggregate transaction.
+It is not necessary to specify a Deadline at this time.
+When listing, add toAggregate to the generated transaction and specify the publickey of the sender account.
+Note that the sender and signing accounts **do not always match**.
+Writing it this way because of the possibility of things like 'Alice signing Bob's sending transaction', which will be explained in subsequent chapters.
+This is the most important concept in using transactions on the Symbol blockchain.
+The transactions in this chapter are the same Alice, so the signature on the aggregate bonded transaction also specifies Alice.
 
-## 4.7 現場で使えるヒント
+## 4.7 Tips for use
 
-### 存在証明
+### Proof of existence
 
-アカウントの章でアカウントによるデータの署名と検証する方法について説明しました。
-このデータをトランザクションに載せてブロックチェーンが承認することで、
-アカウントがある時刻にあるデータの存在を認知したことを消すことができなくなります。
-タイムスタンプの刻印された電子署名を利害関係者間で所有することと同じ意味があると考えることもできます。
-（法律的な判断は他の方にお任せします）
+The chapter on Account described how to sign and verify data by account.
+By putting this data on a transaction and having the blockchain confirmation, it will be impossible to delete the fact that an account has proved the existence of certain data at a certain time.
+It can be considered to have the same meaning as the possession between interested parties of a time-stamped electronic signature.
+（Legal decisions are left to experts）
 
-ブロックチェーンは、この消せない「アカウントが認知したという事実」の存在をもって送信などのデータ更新を行います。
-また、誰もがまだ知らないはずの事実を知っていたことの証明としてブロックチェーンを利用することもできます。
-ここでは、その存在が証明されたデータをトランザクションに載せる２つの方法について説明します。
+The blockchain updates data such as transactions with the existence of this "indelible fact that the account has proved".
+And also the blockchain can be used as proof of knowledge of a fact that nobody should have known about yet.
+This section describes two patterns in which data whose existence has been proven can be put on a transaction.
 
-#### デジタルデータのハッシュ値(SHA256)出力方法
 
-ファイルの要約値をブロックチェーンに記録することでそのファイルの存在を証明することができます。
+#### Digital data hash value (SHA256) output method
 
-各 OS ごとのファイルの SHA256 でハッシュ値を計算する方法は下記の通りです。
+The existence of a file can be proved by recording its digest value in the blockchain.
 
+The calculation of the hash value using SHA256 for files in each operating system is as follows.
 ```sh
 #Windows
-certutil -hashfile WINファイルパス SHA256
+certutil -hashfile WINfilepath SHA256
 #Mac
-shasum -a 256 MACファイルパス
+shasum -a 256 MACfilepath
 #Linux
-sha256sum Linuxファイルパス
+sha256sum Linuxfilepath
 ```
 
-#### 大きなデータの分割
+#### Splitting large data
 
-トランザクションのペイロードには 1023 バイトしか格納できないため、
-大きなデータは分割してペイロードに詰め込んでアグリゲートトランザクションにします。
+As the payload of a transaction can only contain 1023 bytes. Large data is split up and packed into the payload to make an aggregate transaction.
 
 ```js
-bigdata =
-  "C00200000000000093B0B985101C1BDD1BC2BF30D72F35E34265B3F381ECA464733E147A4F0A6B9353547E2E08189EF37E50D271BEB5F09B81CE5816BB34A153D2268520AF630A0A0E5C72B0D5946C1EFEE7E5317C5985F106B739BB0BC07E4F9A288417B3CD6D26000000000198414140770200000000002A769FB40000000076B455CFAE2CCDA9C282BF8556D3E9C9C0DE18B0CBE6660ACCF86EB54AC51B33B001000000000000DB000000000000000E5C72B0D5946C1EFEE7E5317C5985F106B739BB0BC07E4F9A288417B3CD6D26000000000198544198205C1A4CE06C45B3A896B1B2360E03633B9F36BF7F22338B000000000000000066653465353435393833444430383935303645394533424446434235313637433046394232384135344536463032413837364535303734423641303337414643414233303344383841303630353343353345354235413835323835443639434132364235343233343032364244444331443133343139464435353438323930334242453038423832304100000000006800000000000000B2D4FD84B2B63A96AA37C35FC6E0A2341CEC1FD19C8FFC8D93CCCA2B028D1E9D000000000198444198205C1A4CE06C45B3A896B1B2360E03633B9F36BF7F2233BC089179EBBE01A81400140035383435344434373631364336433635373237396800000000000000B2D4FD84B2B63A96AA37C35FC6E0A2341CEC1FD19C8FFC8D93CCCA2B028D1E9D000000000198444198205C1A4CE06C45B3A896B1B2360E03633B9F36BF7F223345ECB996EDDB9BEB1400140035383435344434373631364336433635373237390000000000000000B2D4FD84B2B63A96AA37C35FC6E0A2341CEC1FD19C8FFC8D93CCCA2B028D1E9D5A71EBA9C924EFA146897BE6C9BB3DACEFA26A07D687AC4A83C9B03087640E2D1DDAE952E9DDBC33312E2C8D021B4CC0435852C0756B1EBD983FCE221A981D02";
+bigdata = 'C00200000000000093B0B985101C1BDD1BC2BF30D72F35E34265B3F381ECA464733E147A4F0A6B9353547E2E08189EF37E50D271BEB5F09B81CE5816BB34A153D2268520AF630A0A0E5C72B0D5946C1EFEE7E5317C5985F106B739BB0BC07E4F9A288417B3CD6D26000000000198414140770200000000002A769FB40000000076B455CFAE2CCDA9C282BF8556D3E9C9C0DE18B0CBE6660ACCF86EB54AC51B33B001000000000000DB000000000000000E5C72B0D5946C1EFEE7E5317C5985F106B739BB0BC07E4F9A288417B3CD6D26000000000198544198205C1A4CE06C45B3A896B1B2360E03633B9F36BF7F22338B000000000000000066653465353435393833444430383935303645394533424446434235313637433046394232384135344536463032413837364535303734423641303337414643414233303344383841303630353343353345354235413835323835443639434132364235343233343032364244444331443133343139464435353438323930334242453038423832304100000000006800000000000000B2D4FD84B2B63A96AA37C35FC6E0A2341CEC1FD19C8FFC8D93CCCA2B028D1E9D000000000198444198205C1A4CE06C45B3A896B1B2360E03633B9F36BF7F2233BC089179EBBE01A81400140035383435344434373631364336433635373237396800000000000000B2D4FD84B2B63A96AA37C35FC6E0A2341CEC1FD19C8FFC8D93CCCA2B028D1E9D000000000198444198205C1A4CE06C45B3A896B1B2360E03633B9F36BF7F223345ECB996EDDB9BEB1400140035383435344434373631364336433635373237390000000000000000B2D4FD84B2B63A96AA37C35FC6E0A2341CEC1FD19C8FFC8D93CCCA2B028D1E9D5A71EBA9C924EFA146897BE6C9BB3DACEFA26A07D687AC4A83C9B03087640E2D1DDAE952E9DDBC33312E2C8D021B4CC0435852C0756B1EBD983FCE221A981D02';
 
 let payloads = [];
 for (let i = 0; i < bigdata.length / 1023; i++) {
-  payloads.push(bigdata.substr(i * 1023, 1023));
+    payloads.push(bigdata.substr(i * 1023, 1023));
 }
 console.log(payloads);
 ```
