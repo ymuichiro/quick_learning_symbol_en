@@ -1,14 +1,14 @@
-# 6.ネームスペース
+# 6.Namespace
 
-Symbol ブロックチェーンではネームスペースをレンタルしてアドレスやモザイクに視認性の高い単語をリンクさせることができます。
-ネームスペースは最大 64 文字、利用可能な文字は a, b, c, …, z, 0, 1, 2, …, 9, \_ , - です。
+Namespaces are human-readable text strings that can rent and link with an Address or a Mosaic.
+The name has a maximum length of 64 characters (the only allowed characters are `a` through `z`, `0` through `9`, `_` and `-`).
 
-## 6.1 手数料の計算
+## 6.1 Fee calculation
 
-ネームスペースのレンタルにはネットワーク手数料とは別にレンタル手数料が発生します。
-ネットワークの活性度に比例して価格が変動しますので、取得前に確認するようにしてください。
+For renting a namespace, there is a rental fee which is separate from the network fee.
+Renting fees fluctuate depending on the activity proportion of the network therefore better to check before acquisition.
 
-ルートネームスペースを 365 日レンタルする場合の手数料を計算します。
+In the following example, the fees are calculated for a 365-day renting of a root namespace.
 
 ```js
 nwRepo = repo.createNetworkRepository();
@@ -16,80 +16,75 @@ nwRepo = repo.createNetworkRepository();
 rentalFees = await nwRepo.getRentalFees().toPromise();
 rootNsperBlock = rentalFees.effectiveRootNamespaceRentalFeePerBlock.compact();
 rentalDays = 365;
-rentalBlock = (rentalDays * 24 * 60 * 60) / 30;
+rentalBlock = rentalDays * 24 * 60 * 60 / 30;
 rootNsRenatalFeeTotal = rentalBlock * rootNsperBlock;
 console.log("rentalBlock:" + rentalBlock);
 console.log("rootNsRenatalFeeTotal:" + rootNsRenatalFeeTotal);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > rentalBlock:1051200
-> rootNsRenatalFeeTotal:210240000 //約210XYM
+> rootNsRenatalFeeTotal:210240000 //Approximately 210XYM
 ```
 
-期間はブロック数で指定します。1 ブロックを 30 秒として計算しました。
-最低で 30 日分はレンタルする必要があります（最大で 1825 日分）。
+The duration is specified by the number of blocks; one block is calculated as 30 seconds.
+A minimum of 30 days are required (maximum of 1825 days).
 
-サブネームスペースの取得手数料を計算します。
+Calculate the fee for acquiring a sub namespace.
 
 ```js
-childNamespaceRentalFee = rentalFees.effectiveChildNamespaceRentalFee.compact();
+childNamespaceRentalFee = rentalFees.effectiveChildNamespaceRentalFee.compact()
 console.log(childNamespaceRentalFee);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > 10000000 //10XYM
 ```
 
-サブネームスペースに期間指定はありません。ルートネームスペースをレンタルしている限り使用できます。
+There is no duration limit specified for the sub namespace. It can be used as long as the root namespace is rented.
 
-## 6.2 レンタル
+## 6.2 Rental
 
-ルートネームスペースをレンタルします(例:xembook)
-
+Rent a root namespace.(Example:xembook)
 ```js
+
 tx = sym.NamespaceRegistrationTransaction.createRootNamespace(
-  sym.Deadline.create(epochAdjustment),
-  "xembook",
-  sym.UInt64.fromUint(86400),
-  networkType
+    sym.Deadline.create(epochAdjustment),
+    "xembook",
+    sym.UInt64.fromUint(86400),
+    networkType
 ).setMaxFee(100);
-signedTx = alice.sign(tx, generationHash);
+signedTx = alice.sign(tx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-サブネームスペースをレンタルします(例:xembook.tomato)
-
+Rent a sub namespace.(Example:xembook.tomato)
 ```js
 subNamespaceTx = sym.NamespaceRegistrationTransaction.createSubNamespace(
-  sym.Deadline.create(epochAdjustment),
-  "tomato", //作成するサブネームスペース
-  "xembook", //紐づけたいルートネームスペース
-  networkType
+    sym.Deadline.create(epochAdjustment),
+    "tomato",  //Subnamespace to be created
+    "xembook", //Route namespace to be linked to
+    networkType,
 ).setMaxFee(100);
-signedTx = alice.sign(subNamespaceTx, generationHash);
+signedTx = alice.sign(subNamespaceTx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-2 階層目のサブネームスペースを作成したい場合は
-例えば、xembook.tomato.morning を定義したい場合は以下のようにします。
+If you want to create a tier 2 sub namespace, for example in case of defining xembook.tomato.morning, is the following.
 
 ```js
 subNamespaceTx = sym.NamespaceRegistrationTransaction.createSubNamespace(
     ,
-    "morning",  //作成するサブネームスペース
-    "xembook.tomato", //紐づけたいルートネームスペース
+    "morning",  //Subnamespace to be created
+    "xembook.tomato", //Route namespace to be linked to
     ,
 )
 ```
 
-### 有効期限の計算
 
-レンタル済みルートネームスペースの有効期限を計算します。
+### Calculation of expiry date
+
+Calculates the expiry date of the rented root namespace.
 
 ```js
 nsRepo = repo.createNamespaceRepository();
@@ -102,128 +97,113 @@ lastHeight = (await chainRepo.getChainInfo().toPromise()).height;
 lastBlock = await blockRepo.getBlockByHeight(lastHeight).toPromise();
 remainHeight = nsInfo.endHeight.compact() - lastHeight.compact();
 
-endDate = new Date(
-  lastBlock.timestamp.compact() + remainHeight * 30000 + epochAdjustment * 1000
-);
+endDate = new Date(lastBlock.timestamp.compact() + remainHeight * 30000 + epochAdjustment * 1000)
 console.log(endDate);
 ```
 
-ネームスペース情報の終了ブロックを取得し、現在のブロック高から差し引いた残ブロック数に 30 秒(平均ブロック生成間隔)を掛け合わせた日時を出力します。
-テストネットでは設定した有効期限よりも 1 日程度更新期限が猶予されます。メインネットはこの値が 30 日となっていますのでご留意ください
+Obtain the information of the namespace ending and output the date and time of the remaining number of blocks subtracted from the current block height multiplied by 30 seconds (the average block generation interval).
+For testnet, the update deadline is postponed by about a day from the expiry date. And for the mainnet, this value is 30 days, please note it.
 
-###### 出力例
 
+###### Sample output
 ```js
-> Tue Mar 29 2022 18:17:06 GMT+0900 (日本標準時)
+> Tue Mar 29 2022 18:17:06 GMT+0900 (JST)
 ```
+## 6.3 Link
 
-## 6.3 リンク
-
-### アカウントへのリンク
-
+### Link to an account
 ```js
 namespaceId = new sym.NamespaceId("xembook");
-address = sym.Address.createFromRawAddress(
-  "TBIL6D6RURP45YQRWV6Q7YVWIIPLQGLZQFHWFEQ"
-);
+address = sym.Address.createFromRawAddress("TBIL6D6RURP45YQRWV6Q7YVWIIPLQGLZQFHWFEQ");
 tx = sym.AliasTransaction.createForAddress(
-  sym.Deadline.create(epochAdjustment),
-  sym.AliasAction.Link,
-  namespaceId,
-  address,
-  networkType
+    sym.Deadline.create(epochAdjustment),
+    sym.AliasAction.Link,
+    namespaceId,
+    address,
+    networkType
 ).setMaxFee(100);
-signedTx = alice.sign(tx, generationHash);
+signedTx = alice.sign(tx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
+The linked address does not have to be owned by you.
 
-リンク先のアドレスは自分が所有していなくても問題ありません。
-
-### モザイクへリンク
-
+### Link to a mosic
 ```js
 namespaceId = new sym.NamespaceId("xembook.tomato");
 mosaicId = new sym.MosaicId("3A8416DB2D53xxxx");
 tx = sym.AliasTransaction.createForMosaic(
-  sym.Deadline.create(epochAdjustment),
-  sym.AliasAction.Link,
-  namespaceId,
-  mosaicId,
-  networkType
+    sym.Deadline.create(epochAdjustment),
+    sym.AliasAction.Link,
+    namespaceId,
+    mosaicId,
+    networkType
 ).setMaxFee(100);
-signedTx = alice.sign(tx, generationHash);
+signedTx = alice.sign(tx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-モザイクを作成したアドレスと同一の場合のみリンクできるようです。
+Mosaic can only be linked if it is identical to the address at which the mosaic was created.
 
-## 6.4 未解決で使用
 
-送信先に UnresolvedAccount として指定して、アドレスを特定しないままトランザクションを署名・アナウンスします。
-チェーン側で解決されたアカウントに対しての送信が実施されます。
+## 6.4 Use as an UnresolvedAccount
 
+Designate the destination as UnresolvedAccount to sign and announce the transaction without identifying the address.
+Transaction is executed for an account resolved on the chain side.
 ```js
 namespaceId = new sym.NamespaceId("xembook");
 tx = sym.TransferTransaction.create(
-  sym.Deadline.create(epochAdjustment),
-  namespaceId, //UnresolvedAccount:未解決アカウントアドレス
-  [],
-  sym.EmptyMessage,
-  networkType
+    sym.Deadline.create(epochAdjustment),
+    namespaceId, //Unresolved Account:Unresolved Account Address
+    [],
+    sym.EmptyMessage,
+    networkType
 ).setMaxFee(100);
-signedTx = alice.sign(tx, generationHash);
+signedTx = alice.sign(tx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
-
-送信モザイクに UnresolvedMosaic として指定して、モザイク ID を特定しないままトランザクションを署名・アナウンスします。
+Designate the sending mosaic as an UnresolvedMosaic to sign and announce the transaction without identifying the mosaic ID.
 
 ```js
 namespaceId = new sym.NamespaceId("xembook.tomato");
 tx = sym.TransferTransaction.create(
-  sym.Deadline.create(epochAdjustment),
-  address,
-  [
-    new sym.Mosaic(
-      namespaceId, //UnresolvedMosaic:未解決モザイク
-      sym.UInt64.fromUint(1) //送信量
-    ),
-  ],
-  sym.EmptyMessage,
-  networkType
+    sym.Deadline.create(epochAdjustment),
+    address, 
+    [
+        new sym.Mosaic(
+          namespaceId,//Unresolved Mosaic:Unresolved Mosaic
+          sym.UInt64.fromUint(1) //Amount
+        )
+    ],
+    sym.EmptyMessage,
+    networkType
 ).setMaxFee(100);
-signedTx = alice.sign(tx, generationHash);
+signedTx = alice.sign(tx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-XYM をネームスペースで使用する場合は以下のように指定します。
+To use XYM in a namespace, specify as follows.
 
 ```js
 namespaceId = new sym.NamespaceId("symbol.xym");
 ```
-
 ```js
 > NamespaceId {fullName: 'symbol.xym', id: Id}
     fullName: "symbol.xym"
     id: Id {lower: 1106554862, higher: 3880491450}
 ```
 
-Id は内部では Uint64 と呼ばれる数値 `{lower: 1106554862, higher: 3880491450}` で保持されています。
+Id is held internally as a number `{lower: 1106554862, higher: 3880491450}` called Uint64.
 
-## 6.5 参照
+## 6.5 Reference
 
-アドレスへリンクしたネームスペースの参照します
-
+Refer to the namespace linked to the address.
 ```js
 nsRepo = repo.createNamespaceRepository();
 
-namespaceInfo = await nsRepo
-  .getNamespace(new sym.NamespaceId("xembook"))
-  .toPromise();
+namespaceInfo = await nsRepo.getNamespace(new sym.NamespaceId("xembook")).toPromise();
 console.log(namespaceInfo);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 NamespaceInfo
     active: true
@@ -241,31 +221,24 @@ NamespaceInfo
     startHeight: UInt64 {lower: 324865, higher: 0}
 ```
 
-AliasType は以下の通りです。
-
+AliasType is as follows.
 ```js
 {0: 'None', 1: 'Mosaic', 2: 'Address'}
 ```
 
-NamespaceRegistrationType は以下の通りです。
-
+NamespaceRegistrationType is as follows.
 ```js
 {0: 'RootNamespace', 1: 'SubNamespace'}
 ```
 
-モザイクへリンクしたネームスペースを参照します。
-
+Refer to the namespace linked to the mosaic.
 ```js
 nsRepo = repo.createNamespaceRepository();
 
-namespaceInfo = await nsRepo
-  .getNamespace(new sym.NamespaceId("xembook.tomato"))
-  .toPromise();
+namespaceInfo = await nsRepo.getNamespace(new sym.NamespaceId("xembook.tomato")).toPromise();
 console.log(namespaceInfo);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 NamespaceInfo
   > active: true
@@ -284,53 +257,46 @@ NamespaceInfo
     startHeight: UInt64 {lower: 324865, higher: 0}
 ```
 
-### 逆引き
+### Reverse lookup
 
-アドレスに紐づけられたネームスペースを全て調べます。
-
+Check all namespaces linked to the address.
 ```js
 nsRepo = repo.createNamespaceRepository();
 
-accountNames = await nsRepo
-  .getAccountsNames([
-    sym.Address.createFromRawAddress("TBIL6D6RURP45YQRWV6Q7YVWIIPLQGLZQFHWFEQ"),
-  ])
-  .toPromise();
+accountNames = await nsRepo.getAccountsNames(
+  [sym.Address.createFromRawAddress("TBIL6D6RURP45YQRWV6Q7YVWIIPLQGLZQFHWFEQ")]
+).toPromise();
 
-namespaceIds = accountNames[0].names.map((name) => {
+namespaceIds = accountNames[0].names.map(name=>{
   return name.namespaceId;
 });
 console.log(namespaceIds);
 ```
 
-モザイクに紐づけられたネームスペースを全て調べます。
-
+Check all namespaces linked to the mosaic.
 ```js
 nsRepo = repo.createNamespaceRepository();
 
-mosaicNames = await nsRepo
-  .getMosaicsNames([new sym.MosaicId("72C0212E67A08BCE")])
-  .toPromise();
+mosaicNames = await nsRepo.getMosaicsNames(
+  [new sym.MosaicId("72C0212E67A08BCE")]
+).toPromise();
 
-namespaceIds = mosaicNames[0].names.map((name) => {
+namespaceIds = mosaicNames[0].names.map(name=>{
   return name.namespaceId;
 });
 console.log(namespaceIds);
 ```
 
-### レシートの参照
 
-トランザクションに使用されたネームスペースをブロックチェーン側がどう解決したかを確認します。
+### Receipt reference
+
+Check how the blockchain side has solutioned the namespace used for the transaction.
 
 ```js
 receiptRepo = repo.createReceiptRepository();
-state = await receiptRepo
-  .searchAddressResolutionStatements({ height: 179401 })
-  .toPromise();
+state = await receiptRepo.searchAddressResolutionStatements({height:179401}).toPromise();
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 data: Array(1)
   0: ResolutionStatement
@@ -344,33 +310,27 @@ data: Array(1)
       id: Id {lower: 646738821, higher: 2754876907}
 ```
 
-ResolutionType は以下の通りです。
-
+ResolutionType is as follows.
 ```js
 {0: 'Address', 1: 'Mosaic'}
 ```
 
-#### 注意事項
+#### Note
+As the namespace itself is a renting structure, the link to the namespace used in past transactions may differ from the link to the current namespace.
 
-ネームスペースはレンタル制のため、過去のトランザクションで使用したネームスペースのリンク先と
-現在のネームスペースのリンク先が異なる可能性があります。
-過去のデータを参照する際などに、その時どのアカウントにリンクしていたかなどを知りたい場合は
-必ずレシートを参照するようにしてください。
+Always refer to your receipt if you want to know which account you were linked to at the time, e.g. when referring to historical data.
 
-## 6.6 現場で使えるヒント
 
-### 外部ドメインとの相互リンク
+## 6.6 Tips for use
 
-ネームスペースは重複取得がプロトコル上制限されているため、
-インターネットドメインや実世界で周知されている商標名と同一のネームスペースを取得し、
-外部(公式サイトや印刷物など)からネームスペース存在の認知を公表することで、
-Symbol 上のアカウントのブランド価値を構築することができます
-(法的な効力については調整が必要です)。
-外部ドメイン側のハッキングあるいは、Symbol 側でのネームスペース更新忘れにはご注意ください。
+### Reciprocal links with external domains
 
-#### ネームスペースを取得するアカウントについての注意
+As duplicate namespaces are restricted by protocol, user can build the brand valuation of one's account on the Symbol by acquiring a namespace that is identical to an internet domain or a well-known trademark name in the real world, and by promoting recognition of the namespace from external sources like official websites, printed materials, etc.
+(For legal validity, please seek expert opinion.)
+Beware of hacking external domains and renewing your own Symbol namespaces duration.
 
-ネームスペースはレンタル期限という概念をもつ機能です。
-今のところ、取得したネームスペースは放棄か延長の選択肢しかありません。
-運用譲渡などが発生する可能性のあるシステムでネームスペース活用を検討する場合は
-マルチシグ化(9 章)したアカウントでネームスペースを取得することをおすすめします。
+
+#### Note on accounts acquiring namespace
+Namespace is a feature with the renting duration concept.
+At the moment, options for acquired namespaces are only abandonment or duration extension.
+In case utilising namespace in a system where operational transfers, etc. are considered, we recommend acquiring a namespace with a multi-signing account (Chapter 9).
