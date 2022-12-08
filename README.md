@@ -16,7 +16,7 @@
 
 ### [2.Building a development environment](./02_setting.md)
 
-### [3.アカウント](./03_account.md)
+### [3.Account](./03_account.md)
 
 - [3.1 Account](03_account.md#31-Creating an account)
 - [3.2 A TransferTransaction to another account](03_account.md#32-A TransferTransaction to another account)
