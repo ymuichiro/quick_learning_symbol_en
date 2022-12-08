@@ -1,64 +1,55 @@
-# 3.アカウント
+# 3.Account
 
-アカウントは秘密鍵に紐づく情報が記録されたデータ構造体です。アカウントと関連づいた秘密鍵を使って署名することでのみブロックチェーンのデータを更新することができます。
+An account is a data deposit structure in which information and assets associated with a private key is recorded. Only by signing with the private key associated with the account is the datas on the blockchain updatable.  
 
-## 3.1 アカウント生成
+## 3.1 Creating an account
 
-アカウントには秘密鍵と公開鍵をセットにしたキーペア、アドレスなどの情報が含まれています。まずはランダムにアカウントを作成して、それらの情報を確認してみましょう。
+The account contains a key pair, which is a set of private and public key, an address and other information. First of all, try creating an account  randomly and check the information that is contained.  
 
-### 新規生成
-
+### Create a new account 
 ```js
 alice = sym.Account.generateNewAccount(networkType);
 console.log(alice);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > Account
     address: Address {address: 'TBXUTAX6O6EUVPB6X7OBNX6UUXBMPPAFX7KE5TQ', networkType: 152}
     keyPair: {privateKey: Uint8Array(32), publicKey: Uint8Array(32)}
 ```
 
-networkType は以下の通りです。
-
+networkType is the following.
 ```js
 {104: 'MAIN_NET', 152: 'TEST_NET'}
 ```
 
-### 秘密鍵と公開鍵の導出
-
+### Deriving private and public key.
 ```js
 console.log(alice.privateKey);
 console.log(alice.publicKey);
 ```
-
 ```
 > 1E9139CC1580B4AED6A1FE110085281D4982ED0D89CE07F3380EB83069B1****
 > D4933FC1E4C56F9DF9314E9E0533173E1AB727BDB2A04B59F048124E93BEFBD2
 ```
 
-#### 注意事項
+#### Notes
+If the private key is lost, the data associated with that account cannot be manipulated forever. In addition, the private key must not be shared with others, as the data manipulation is signed using the nature of the private key, which is unknown to others. Refrain from sharing the private key and it is also advisable not passing on the private key within the organization and continuing to operate with it.
+In general web services, passwords are allocated to "account ID", so passwords can be changed from the account, but in blockchain, a unique ID (address) is allocated to the private key that is the password, thus it is not possible to change or re-generate the private key associated with an account from the account.  
 
-秘密鍵を紛失するとそのアカウントに紐づけられたデータを操作することが出来なくなります。また、他人は知らないという秘密鍵の性質を利用してデータ操作の署名を行うので、秘密鍵を他人に教えてはいけません。組織のなかで秘密鍵を譲り受けて運用を続けるといった行為も控えましょう。
-一般的な Web サービスでは「アカウント ID」に対してパスワードが割り振られるため、パスワードの変更が可能ですが、ブロックチェーンではパスワードにあたる秘密鍵に対して一意に決まる ID(アドレス)が割り振られるため、アカウントに紐づく秘密鍵を変更するということはできません。
 
-### アドレスの導出
-
+### Deriving of address
 ```js
 aliceRawAddress = alice.address.plain();
 console.log(aliceRawAddress);
 ```
-
 ```js
 > TBXUTAX6O6EUVPB6X7OBNX6UUXBMPPAFX7KE5TQ
 ```
 
-これらがブロックチェーンを操作するための最も基本的な情報となります。また、秘密鍵からアカウントを生成したり、公開鍵やアドレスのみを扱うクラスの生成方法も確認しておきましょう。
+These things above are the most basic information for operating the blockchain. It is also better to check how to generate accounts from private key and how to generate classes that only deal with public key and addresses.  
 
-### 秘密鍵からアカウント生成
-
+### Account generation from private key.
 ```js
 alice = sym.Account.createFromPrivateKey(
   "1E9139CC1580B4AED6A1FE110085281D4982ED0D89CE07F3380EB83069B1****",
@@ -66,8 +57,7 @@ alice = sym.Account.createFromPrivateKey(
 );
 ```
 
-### 公開鍵クラスの生成
-
+### Public key class generation
 ```js
 alicePublicAccount = sym.PublicAccount.createFromPublicKey(
   "D4933FC1E4C56F9DF9314E9E0533173E1AB727BDB2A04B59F048124E93BEFBD2",
@@ -75,9 +65,7 @@ alicePublicAccount = sym.PublicAccount.createFromPublicKey(
 );
 console.log(alicePublicAccount);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > PublicAccount
     address: Address {address: 'TBXUTAX6O6EUVPB6X7OBNX6UUXBMPPAFX7KE5TQ', networkType: 152}
@@ -85,70 +73,65 @@ console.log(alicePublicAccount);
 
 ```
 
-### アドレスクラスの生成
-
+### Address classe generation
 ```js
 aliceAddress = sym.Address.createFromRawAddress(
   "TBXUTAX6O6EUVPB6X7OBNX6UUXBMPPAFX7KE5TQ"
 );
 console.log(aliceAddress);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > Address
     address: "TBXUTAX6O6EUVPB6X7OBNX6UUXBMPPAFX7KE5TQ"
     networkType: 152
 ```
 
-## 3.2 アカウントへの送信
+## 3.2 A TransferTransaction to another account
 
-アカウントを作成しただけでは、ブロックチェーンにデータを送信することはできません。  
-パブリックブロックチェーンはリソースを有効活用するためにデータ送信時に手数料を要求します。  
-Symbol ブロックチェーンでは、この手数料を XYM という共通トークンで支払うことになります。  
-アカウントを生成したら、この後の章から説明するトランザクションを実行するために必要な手数料を送信しておきます。
+Creating an account simply does not mean that data can be transferred to the blockchain.  
+Public blockchains require fees for data transferring in order to utilise resources effectively.  
+The Symbol blockchain, fees are paid with a native token which is called XYM.  
+Once you generated the account, send XYM to the account for the transaction fees which is described in chapters later.  
 
-### フォーセットから送信
+### Receive XYM from the faucet
 
-テストネットではフォーセット（蛇口）サービスから検証用の XYM を入手することができます。  
-メインネットの場合は取引所などで XYM を購入するか、投げ銭サービス(NEMLOG,QUEST)などを利用して寄付を募りましょう。
+The Testnet can obtain XYM for verification from the faucet.  
+The Mainnet, you can buy XYM on exchanges, or use tipping services (NEMLOG, QUEST) to have donations.  
 
-テストネット
-
-- FAUCET(蛇口)
+Testnet
+- FAUCET
   - https://testnet.symbol.tools/
 
-メインネット
-
+Mainnet
 - NEMLOG
   - https://nemlog.nem.social/
 - QUEST
   - https://quest-bc.com/
 
-### エクスプローラーで確認
 
-フォーセットから作成したアカウントへ送信が成功したらエクスプローラーで確認してみましょう。
 
-- テストネット
+### Check in explorer
+
+Check transaction in the explorer after transferring from faucet to the account you have created.。
+
+- Testnet
   - https://testnet.symbol.fyi/
-- メインネット
+- Mainnet
   - https://symbol.fyi/
 
-## 3.3 アカウント情報の確認
+## 3.3 Check account information
 
-ノードに保存されているアカウント情報を取得します。
+Retrieve the account information kept in the node.
 
-### 所有モザイク一覧の取得
+### Retrieve a list of owned mosaics
 
 ```js
 accountRepo = repo.createAccountRepository();
 accountInfo = await accountRepo.getAccountInfo(aliceAddress).toPromise();
 console.log(accountInfo);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > AccountInfo
     address: Address {address: 'TBXUTAX6O6EUVPB6X7OBNX6UUXBMPPAFX7KE5TQ', networkType: 152}
@@ -161,174 +144,153 @@ console.log(accountInfo);
 ```
 
 #### publicKey
-
-クライアント側で作成しただけで、ブロックチェーンでまだ利用されていないアカウント情報は記録されていません。宛先として指定されて受信することで初めてアカウント情報が記録され、署名したトランザクションを送信することで公開鍵の情報が記録されます。そのため、publicKey は現在`00000...`表記となっています。
+Account information which has just been created on the client side and is not used yet in the blockchain is not recorded. Account information will be recorded when receiving a transaction as a destination, then public key information will be recorded when sending a signed transaction. Therefore, publicKey is noted as`00000...`at this moment.
 
 #### UInt64
-
-JavaScript では大きすぎる数値はあふれてしまうため、id や amount は UInt64 という sdk の独自フォーマットで管理されています。文字列に変換する場合は toString()、数値に変換する場合は compact()、16 進数にする場合は toHex() で変換してください。
+JavaScript will overflow when numbers are too large, so ID and amount are managed in the sdk's own format called UInt64. Use toString() to convert to string, compact() to convert to number and  toHex()  to convert to hexadecimal.
 
 ```js
-console.log("addressHeight:"); //アドレスが記録されたブロック高
-console.log(accountInfo.addressHeight.compact()); //数値
-accountInfo.mosaics.forEach((mosaic) => {
-  console.log("id:" + mosaic.id.toHex()); //16進数
-  console.log("amount:" + mosaic.amount.toString()); //文字列
+console.log("addressHeight:"); //Block height at which the address is recorded
+console.log(accountInfo.addressHeight.compact()); //Numerics
+accountInfo.mosaics.forEach(mosaic => {
+  console.log("id:" + mosaic.id.toHex()); //Hexadecimal
+  console.log("amount:" + mosaic.amount.toString()); //String
 });
 ```
 
-大きすぎる id 値を compact で数値変換するとエラーが発生することがあります。  
+Inverting an ID value that is too large into a numerical value with COMPACT may result in an error.  
 `Compacted value is greater than Number.Max_Value.`
 
-#### 表示桁数の調整
 
-所有するトークンの量は誤差の発生を防ぐため、整数値で扱います。トークンの定義から可分性を取得することができるので、その値を使って正確な所有量を表示してみます。
+#### Adjustment of display digits
+
+Treating the amount of owned tokens as an integer value to avoid errors. We can get the divisibility from the token definition, so we can use that value to display the exact amount of owned tokens.  
 
 ```js
 mosaicRepo = repo.createMosaicRepository();
 mosaicAmount = accountInfo.mosaics[0].amount.toString();
 mosaicInfo = await mosaicRepo.getMosaic(accountInfo.mosaics[0].id).toPromise();
-divisibility = mosaicInfo.divisibility; //可分性
-if (divisibility > 0) {
-  displayAmount =
-    mosaicAmount.slice(0, mosaicAmount.length - divisibility) +
-    "." +
-    mosaicAmount.slice(-divisibility);
-} else {
+divisibility = mosaicInfo.divisibility; //Divisibility
+if(divisibility > 0){
+  displayAmount = mosaicAmount.slice(0,mosaicAmount.length-divisibility)  
+  + "." + mosaicAmount.slice(-divisibility);
+}else{
   displayAmount = mosaicAmount;
 }
 console.log(displayAmount);
 ```
 
-## 3.4 現場で使えるヒント
+## 3.4 Tips for use
+### Encryption and signatures
 
-### 暗号化と署名
+Both private key and public key generated as accounts can be used for conventional encryption and digital signatures. Data confidentiality and legitimacy can be verified on a p2p (end-to-end) basis, even if applications have reliability issues.  
 
-アカウントとして生成した秘密鍵や公開鍵は、そのまま従来の暗号化や電子署名として活用することができます。信頼性に問題点があるアプリケーションを使用する必要がある場合も、個人間（エンドツーエンド）でデータの秘匿性・正当性を検証することができます。
-
-#### 事前準備：対話のための Bob アカウントを生成
-
+#### Advance preparation: generating Bob account for connectivity test
 ```js
 bob = sym.Account.generateNewAccount(networkType);
 bobPublicAccount = bob.publicAccount;
 ```
 
-#### 暗号化
+#### Encryption
 
-Alice の秘密鍵・Bob の公開鍵で暗号化し、Alice の公開鍵・Bob の秘密鍵で復号します（AES-GCM 形式）。
+Encrypt with Alice's private key and Bob's public key and decrypt with Alice's public key and Bob's private key (AES-GCM format).
 
 ```js
-message = "Hello Symol!";
-encryptedMessage = alice.encryptMessage(message, bob.publicAccount);
+message = 'Hello Symol!';
+encryptedMessage = alice.encryptMessage(message ,bob.publicAccount);
 console.log(encryptedMessage);
 ```
-
 ```js
 > 294C8979156C0D941270BAC191F7C689E93371EDBC36ADD8B920CF494012A97BA2D1A3759F9A6D55D5957E9D
 ```
 
-#### 復号化
-
+#### Decrypt
 ```js
 decryptMessage = bob.decryptMessage(
   new sym.EncryptedMessage(
     "294C8979156C0D941270BAC191F7C689E93371EDBC36ADD8B920CF494012A97BA2D1A3759F9A6D55D5957E9D"
   ),
   alice.publicAccount
-).payload;
+).payload
 console.log(decryptMessage);
 ```
-
 ```js
 > "Hello Symol!"
 ```
 
-#### 署名
+#### Signature
 
-Alice の秘密鍵でメッセージを署名し、Alice の公開鍵と署名でメッセージを検証します。
+Sign the message with Alice's private key and verify the message with Alice's public key and signature.
 
 ```js
 Buffer = require("/node_modules/buffer").Buffer;
-payload = Buffer.from("Hello Symol!", "utf-8");
-signature = Buffer.from(sym.KeyPair.sign(alice.keyPair, payload))
-  .toString("hex")
-  .toUpperCase();
+payload = Buffer.from("Hello Symol!", 'utf-8');
+signature = Buffer.from(sym.KeyPair.sign(alice.keyPair, payload)).toString("hex").toUpperCase();
 console.log(signature);
 ```
-
 ```
 > B8A9BCDE9246BB5780A8DED0F4D5DFC80020BBB7360B863EC1F9C62CAFA8686049F39A9F403CB4E66104754A6AEDEF8F6B4AC79E9416DEEDC176FDD24AFEC60E
 ```
 
-#### 検証
-
+#### Verification
 ```js
 isVerified = sym.KeyPair.verify(
   alice.keyPair.publicKey,
-  Buffer.from("Hello Symol!", "utf-8"),
-  Buffer.from(signature, "hex")
-);
+  Buffer.from("Hello Symol!", 'utf-8'),
+  Buffer.from(signature, 'hex')
+)
 console.log(isVerified);
 ```
-
 ```js
 > true
 ```
 
-ブロックチェーンを使用しない署名は何度も再利用される可能性があることにご注意ください。
+Note that signatures that do not use the blockchain may be re-used many times.
 
-### アカウントの保管
+### Account management
 
-アカウントの管理方法について説明しておきます。  
-秘密鍵はそのままで保存しないようにしてください。symbol-qr-library を利用して秘密鍵をパスフレーズで暗号化して保存する方法を紹介します。
+This section explains how to manage your account.  
+Private keys should not be kept as they are; here is how to encrypt and keep private key with a passphrase using symbol-qr-library.  
 
-#### 秘密鍵の暗号化
+#### Encryption of private key
 
 ```js
 qr = require("/node_modules/symbol-qr-library");
 
-//パスフレーズでロックされたアカウント生成
+//Passphrase-Locked account generation
 signerQR = qr.QRCodeGenerator.createExportAccount(
-  alice.privateKey,
-  networkType,
-  generationHash,
-  "パスフレーズ"
+  alice.privateKey, networkType, generationHash, "Passphrase"
 );
 
-//QRコード表示
-signerQR.toBase64().subscribe((x) => {
-  //HTML body上にQRコードを表示する例
-  (tag = document.createElement("img")).src = x;
-  document.getElementsByTagName("body")[0].appendChild(tag);
+//QR code display
+signerQR.toBase64().subscribe(x =>{
+
+  //Example of displaying a QR code on an HTML body
+  (tag= document.createElement('img')).src = x;
+  document.getElementsByTagName('body')[0].appendChild(tag);
 });
 
-//アカウントを暗号化したJSONデータとして表示
+//Display accounts as encrypted JSON data
 jsonSignerQR = signerQR.toJSON();
 console.log(jsonSignerQR);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > {"v":3,"type":2,"network_id":152,"chain_id":"7FCCD304802016BEBBCD342A332F91FF1F3BB5E902988B352697BE245F48E836","data":{"ciphertext":"e9e2f76cb482fd054bc13b7ca7c9d086E7VxeGS/N8n1WGTc5MwshNMxUiOpSV2CNagtc6dDZ7rVZcnHXrrESS06CtDTLdD7qrNZEZAi166ucDUgk4Yst0P/XJfesCpXRxlzzNgcK8Q=","salt":"54de9318a44cc8990e01baba1bcb92fa111d5bcc0b02ffc6544d2816989dc0e9"}}
 ```
+The QR code or text output by this jsonSignerQR can be saved to recover the private key any time.
 
-この jsonSignerQR で出力される QR コード、あるいはテキストを保存しておけばいつでも秘密鍵を復元することができます。
-
-#### 暗号化された秘密鍵の復号
+#### Decryption of encrypted private key
 
 ```js
-//保存しておいたテキスト、あるいはQRコードスキャンで得られたテキストをjsonSignerQRに代入
-jsonSignerQR =
-  '{"v":3,"type":2,"network_id":152,"chain_id":"7FCCD304802016BEBBCD342A332F91FF1F3BB5E902988B352697BE245F48E836","data":{"ciphertext":"e9e2f76cb482fd054bc13b7ca7c9d086E7VxeGS/N8n1WGTc5MwshNMxUiOpSV2CNagtc6dDZ7rVZcnHXrrESS06CtDTLdD7qrNZEZAi166ucDUgk4Yst0P/XJfesCpXRxlzzNgcK8Q=","salt":"54de9318a44cc8990e01baba1bcb92fa111d5bcc0b02ffc6544d2816989dc0e9"}}';
+//Assign stored text or text retrived from a QR code scan into json signer QR
+jsonSignerQR = '{"v":3,"type":2,"network_id":152,"chain_id":"7FCCD304802016BEBBCD342A332F91FF1F3BB5E902988B352697BE245F48E836","data":{"ciphertext":"e9e2f76cb482fd054bc13b7ca7c9d086E7VxeGS/N8n1WGTc5MwshNMxUiOpSV2CNagtc6dDZ7rVZcnHXrrESS06CtDTLdD7qrNZEZAi166ucDUgk4Yst0P/XJfesCpXRxlzzNgcK8Q=","salt":"54de9318a44cc8990e01baba1bcb92fa111d5bcc0b02ffc6544d2816989dc0e9"}}';
 
 qr = require("/node_modules/symbol-qr-library");
-signerQR = qr.AccountQR.fromJSON(jsonSignerQR, "パスフレーズ");
+signerQR = qr.AccountQR.fromJSON(jsonSignerQR,"Passphrase");
 console.log(signerQR.accountPrivateKey);
 ```
-
-###### 出力例
-
+###### Sample output
 ```js
 > 1E9139CC1580B4AED6A1FE110085281D4982ED0D89CE07F3380EB83069B1****
 ```
