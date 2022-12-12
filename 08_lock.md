@@ -1,196 +1,177 @@
-# 8.ロック
+# 8.Lock
 
-Symbol ブロックチェーンにはハッシュロックとシークレットロックの２種類のロック機構があります。
+The Symbol blockchain has two types of LockTransactions: Hash Lock Transaction and Secret Lock Transaction.  
 
-## 8.1 ハッシュロック
+## 8.1 Hash Lock
 
-ハッシュロックは後でアナウンスされる予定のトランザクションを事前にハッシュ値で登録しておくことで、
-該当トランザクションがアナウンスされた場合に、そのトランザクションを API ノード上で処理せずにロックさせて、署名が集まってから処理を行うことができます。
-アカウントが所有するモザイクを操作できないようにロックするわけではなく、ロックされるのはハッシュ値の対象となるトランザクションとなります。
-ハッシュロックにかかる費用は 10XYM、有効期限は最大約 48 時間です。ロックしたトランザクションが承認されれば 10XYM は返却されます。
+Hash Lock Transaction allows a transaction that will be announced later as it is stored in every node's partial cache with a hash value till the transaction is announced, while it waits to be fully signed and the transaction can be locked without processing it on the API node.
+It does not lock the tokens owned by the account, it is the transaction subject to the hash value that is locked.
+The cost of a Hash Lock Transaction is 10 XYM and the maximum validity period is approximately 48 hours. The locked funds will be refunded to the account when the Hash Lock Transaction is fully signed.  
 
-### アグリゲートボンデッドトランザクションの作成
+
+### Creation of an Aggregate Bonded Transaction.
 
 ```js
 bob = sym.Account.generateNewAccount(networkType);
 
 tx1 = sym.TransferTransaction.create(
-  undefined,
-  bob.address, //Bobへの送信
-  [
-    //1XYM
-    new sym.Mosaic(
-      new sym.NamespaceId("symbol.xym"),
-      sym.UInt64.fromUint(1000000)
-    ),
-  ],
-  sym.EmptyMessage, //メッセージ無し
-  networkType
+    undefined,
+    bob.address,  //Send to Bob
+    [ //1XYM
+      new sym.Mosaic(
+        new sym.NamespaceId("symbol.xym"),
+        sym.UInt64.fromUint(1000000)
+      )
+    ],
+    sym.EmptyMessage, //mptyMessage
+    networkType
 );
 
 tx2 = sym.TransferTransaction.create(
-  undefined,
-  alice.address, // Aliceへの送信
-  [],
-  sym.PlainMessage.create("thank you!"), //メッセージ
-  networkType
+    undefined,
+    alice.address,  //Send to Alice
+    [],
+    sym.PlainMessage.create('thank you!'), //Message
+    networkType
 );
 
 aggregateArray = [
-  tx1.toAggregate(alice.publicAccount), //Aliceからの送信
-  tx2.toAggregate(bob.publicAccount), // Bobからの送信
-];
+    tx1.toAggregate(alice.publicAccount), //Sent from Alice
+    tx2.toAggregate(bob.publicAccount), //Sent from  Bob
+]
 
-//アグリゲートボンデッドトランザクション
+//Aggregate Bonded Transaction
 aggregateTx = sym.AggregateTransaction.createBonded(
-  sym.Deadline.create(epochAdjustment),
-  aggregateArray,
-  networkType,
-  []
+    sym.Deadline.create(epochAdjustment),
+    aggregateArray,
+    networkType,
+    [],
 ).setMaxFeeForAggregate(100, 1);
 
-//署名
+//Signature
 signedAggregateTx = alice.sign(aggregateTx, generationHash);
 ```
 
-tx1,tx2 の 2 つのトランザクションを aggregateArray で配列にする時に、送信元アカウントの公開鍵を指定します。
-公開鍵はアカウントの章を参考に事前に API で取得しておきましょう。
-配列化されたトランザクションはブロック承認時にその順序で整合性を検証されます。
-例えば、tx1 で NFT を Alice から Bob へ送信した後、tx2 で Bob から Carol へ同じ NFT を送信することは可能ですが、tx2,tx1 の順序でアグリゲートトランザクションを通知するとエラーになります。
-また、アグリゲートトランザクションの中に 1 つでも整合性の合わないトランザクションが存在していると、アグリゲートトランザクション全体がエラーとなってチェーンに承認されることはありません。
+Specify the public key of the sender's account when two transactions, tx1 and tx2, are arrayed in AggregateArray.
+Get the public key in advance via the API with reference to the chapter on Account.
+Arrayed transactions are verified for integrity in that order during block approval.
+For example, it is possible to send an NFT from Alice to Bob at tx1 and then send the NFT which is sent Alice to Bob at tx1, from Bob to Carol at tx2, but notifying Aggregate transaction in the order tx2,tx1 will result in an error.
+In addition, if there is even one inconsistent transaction in the Aggregate transaction, the entire Aggregate transaction will be an error and will not be approved into the chain.
 
-### ハッシュロックトランザクションの作成と署名、アナウンス
-
+### Creation, signing and announcement of Hash Lock Transaction
 ```js
-//ハッシュロックTX作成
+//Creation of Hash Lock TX
 hashLockTx = sym.HashLockTransaction.create(
   sym.Deadline.create(epochAdjustment),
-  new sym.Mosaic(
-    new sym.NamespaceId("symbol.xym"),
-    sym.UInt64.fromUint(10 * 1000000)
-  ), //10xym固定値
-  sym.UInt64.fromUint(480), // ロック有効期限
-  signedAggregateTx, // このハッシュ値を登録
-  networkType
+    new sym.Mosaic(new sym.NamespaceId("symbol.xym"),sym.UInt64.fromUint(10 * 1000000)), //10xym by default
+    sym.UInt64.fromUint(480), // Lock expiry date
+    signedAggregateTx,// Register this hash value
+    networkType
 ).setMaxFee(100);
 
-//署名
+//Signature
 signedLockTx = alice.sign(hashLockTx, generationHash);
 
-//ハッシュロックTXをアナウンス
+//Announcing Hash Lock TX
 await txRepo.announce(signedLockTx).toPromise();
 ```
 
-### アグリゲートボンデッドトランザクションのアナウンス
+### Announcement of Aggregate Bonded Transaction
 
-エクスプローラーなどで確認した後、ボンデッドトランザクションをネットワークにアナウンスします。
-
+After checking with e.g. Explorer, announce the Bonded Transaction to the network.
 ```js
 await txRepo.announceAggregateBonded(signedAggregateTx).toPromise();
 ```
 
-### 連署
 
-ロックされたトランザクションを指定されたアカウント(Bob)で連署します。
+### Co-signature
+Co-sign the locked transaction with the specified account (Bob).
 
 ```js
-txInfo = await txRepo
-  .getTransaction(signedAggregateTx.hash, sym.TransactionGroup.Partial)
-  .toPromise();
+txInfo = await txRepo.getTransaction(signedAggregateTx.hash,sym.TransactionGroup.Partial).toPromise();
 cosignatureTx = sym.CosignatureTransaction.create(txInfo);
 signedCosTx = bob.signCosignatureTransaction(cosignatureTx);
 await txRepo.announceAggregateBondedCosignature(signedCosTx).toPromise();
 ```
 
-### 注意点
+### Note
+Hash Lock Transactions can be created and announced by anyone, not just the account that initially creates and signs the transaction, but makes sure that the Aggregate Transaction includes a transaction for whom the account is the signer.
+Dummy transactions with no mosaic transmission & no message are fine (they say this is a specification to affect performance).
 
-ハッシュロックトランザクションは起案者(トランザクションを作成し最初に署名するアカウント)に限らず、誰が作成してアナウンスしても大丈夫ですが、
-アグリゲートトランザクションにそのアカウントが signer となるトランザクションを含めるようにしてください。
-モザイク送信無し＆メッセージ無しのダミートランザクションでも問題ありません（パフォーマンスに影響が出るための仕様とのことです）
 
-## 8.2 シークレットロック・シークレットプルーフ
+## 8.2 Secret Lock・Secret Proof
 
-シークレットロックは事前に共通パスワードを作成しておき、指定モザイクをロックします。
-受信者が有効期限内にパスワードの所有を証明することができればロックされたモザイクを受け取ることができる仕組みです。
+The secret lock creates a common password in advance and locks the designated mosaic.
+That allows the recipient to receive the locked mosaic if they can prove possession of the password within the expiry date.
 
-ここでは Alice が 1XYM をロックして Bob が解除することで受信する方法を説明します。
+This section describes how Alice locks the 1XYM and Bob unlocks it to receive it.
 
-まずは Alice とやり取りする Bob アカウントを作成します。
-ロック解除に Bob 側からトランザクションをアナウンスする必要があるので FAUCET で 10XYM ほど受信しておきます。
+First, create a Bob account to interact with Alice.
+Bob needs to announce the transaction to unlock the lock, so please receive about 10XYM from the FAUCET.
 
 ```js
 bob = sym.Account.generateNewAccount(networkType);
 console.log(bob.address);
 
-//FAUCET URL出力
-console.log(
-  "https://testnet.symbol.tools/?recipient=" +
-    bob.address.plain() +
-    "&amount=10"
-);
+//FAUCET URL outlet
+console.log("https://testnet.symbol.tools/?recipient=" + bob.address.plain() +"&amount=10");
 ```
 
-### シークレットロック
+### Secret Lock
 
-ロック・解除にかかわる共通暗号を作成します。
+Create a common pass for locking and unlocking.
 
 ```js
-sha3_256 = require("/node_modules/js-sha3").sha3_256;
+sha3_256 = require('/node_modules/js-sha3').sha3_256;
 
 random = sym.Crypto.randomBytes(20);
 hash = sha3_256.create();
-secret = hash.update(random).hex(); //ロック用キーワード
-proof = random.toString("hex"); //解除用キーワード
+secret = hash.update(random).hex(); //Lock keyword
+proof = random.toString('hex'); //Unlock keyword
 console.log("secret:" + secret);
 console.log("proof:" + proof);
 ```
 
-###### 出力例
-
+###### Sample outlet
 ```js
 > secret:f260bfb53478f163ee61ee3e5fb7cfcaf7f0b663bc9dd4c537b958d4ce00e240
   proof:7944496ac0f572173c2549baf9ac18f893aab6d0
 ```
 
-トランザクションを作成・署名・アナウンスします
-
+Creating, signing and announcing transaction
 ```js
 lockTx = sym.SecretLockTransaction.create(
-  sym.Deadline.create(epochAdjustment),
-  new sym.Mosaic(
-    new sym.NamespaceId("symbol.xym"),
-    sym.UInt64.fromUint(1000000) //1XYM
-  ), //ロックするモザイク
-  sym.UInt64.fromUint(480), //ロック期間(ブロック数)
-  sym.LockHashAlgorithm.Op_Sha3_256, //ロックキーワード生成に使用したアルゴリズム
-  secret, //ロック用キーワード
-  bob.address, //解除時の転送先:Bob
-  networkType
+    sym.Deadline.create(epochAdjustment),
+    new sym.Mosaic(
+      new sym.NamespaceId("symbol.xym"),
+      sym.UInt64.fromUint(1000000) //1XYM
+    ), //Mosaic to lock
+    sym.UInt64.fromUint(480), //Locking period (number of blocks)
+    sym.LockHashAlgorithm.Op_Sha3_256, //Algorithm used for lock keyword generation
+    secret, //Lock keyword
+    bob.address, //Forwarding address on unlock:Bob
+    networkType
 ).setMaxFee(100);
 
-signedLockTx = alice.sign(lockTx, generationHash);
+signedLockTx = alice.sign(lockTx,generationHash);
 await txRepo.announce(signedLockTx).toPromise();
 ```
 
-LockHashAlgorithm は以下の通りです。
-
+The LockHashAlgorithm is as follows
 ```js
 {0: 'Op_Sha3_256', 1: 'Op_Hash_160', 2: 'Op_Hash_256'}
 ```
 
-ロック時に解除先を指定するので Bob 以外のアカウントが解除することはできません。
-ロック期間は最長で 365 日(ブロック数を日換算)までです。
+At the time of locking, the unlocking destination is specified, which means  only Bob can unlock it.
+The maximum lock period is 365 days (counting number of blocks in days).
 
-承認されたトランザクションを確認します。
-
+Confirm approved transactions.
 ```js
 slRepo = repo.createSecretLockRepository();
-res = await slRepo.search({ secret: secret }).toPromise();
+res = await slRepo.search({secret:secret}).toPromise();
 console.log(res.data[0]);
 ```
-
-###### 出力例
-
+###### Sample outlet
 ```js
 > SecretLockInfo
     amount: UInt64 {lower: 1000000, higher: 0}
@@ -205,40 +186,36 @@ console.log(res.data[0]);
     status: 0
     version: 1
 ```
+It shows that Alice who lock the transaction is recorded in ownerAddress and the Bob is recorded in recipientAddress.
+The information about the secret is published and Bob informs the network of the corresponding proof.
 
-ロックした Alice が ownerAddress、受信予定の Bob が recipientAddress に記録されています。
-secret 情報が公開されていて、これに対応する proof を Bob がネットワークに通知します。
 
-### シークレットプルーフ
+### Secret Proof
 
-解除用キーワードを使用してロック解除します。
-Bob は事前に解除用キーワードを入手しておく必要があります。
+Unlock with using the unlock keywords.
+Bob must have obtained the unlock keywords in advance.
+
 
 ```js
 proofTx = sym.SecretProofTransaction.create(
-  sym.Deadline.create(epochAdjustment),
-  sym.LockHashAlgorithm.Op_Sha3_256, //ロック作成に使用したアルゴリズム
-  secret, //ロックキーワード
-  bob.address, //解除アカウント（受信アカウント）
-  proof, //解除用キーワード
-  networkType
+    sym.Deadline.create(epochAdjustment),
+    sym.LockHashAlgorithm.Op_Sha3_256, //Algorithm used for lock keyword generation
+    secret, //Lock keyword
+    bob.address, //Deactivated accounts (receiving accounts)
+    proof, //Un lock keyword
+    networkType
 ).setMaxFee(100);
 
-signedProofTx = bob.sign(proofTx, generationHash);
+signedProofTx = bob.sign(proofTx,generationHash);
 await txRepo.announce(signedProofTx).toPromise();
 ```
 
-承認結果を確認します。
-
+Confirm the approval result.
 ```js
-txInfo = await txRepo
-  .getTransaction(signedProofTx.hash, sym.TransactionGroup.Confirmed)
-  .toPromise();
+txInfo = await txRepo.getTransaction(signedProofTx.hash,sym.TransactionGroup.Confirmed).toPromise();
 console.log(txInfo);
 ```
-
-###### 出力例
-
+###### Sample outlet
 ```js
 > SecretProofTransaction
   > deadline: Deadline {adjustedValue: 12669305546}
@@ -259,24 +236,20 @@ console.log(txInfo);
     type: 16978
 ```
 
-SecretProofTransaction にはモザイクの受信量の情報は含まれていません。
-ブロック生成時に作成されるレシートで受信量を確認します。
-レシートタイプ:LockHash_Completed で Bob 宛のレシートを検索してみます。
+The SecretProofTransaction does not contain information about  the amount of mosaic received. Check the amount in the receipt created when the block is generated.
+Search for receipts addressed to Bob with receipt type:LockHash_Completed.
+
 
 ```js
 receiptRepo = repo.createReceiptRepository();
 
-receiptInfo = await receiptRepo
-  .searchReceipts({
-    receiptType: sym.ReceiptTypeLockHash_Completed,
-    targetAddress: bob.address,
-  })
-  .toPromise();
+receiptInfo = await receiptRepo.searchReceipts({
+    receiptType:sym.ReceiptTypeLockHash_Completed,
+    targetAddress:bob.address
+}).toPromise();
 console.log(receiptInfo.data);
 ```
-
-###### 出力例
-
+###### Sample outlet
 ```js
 > data: Array(1)
   >  0: TransactionStatement
@@ -290,32 +263,30 @@ console.log(receiptInfo.data);
               type: 8786
 ```
 
-ReceiptType は以下の通りです。
+ReceiptType is as follows
 
 ```js
 {4685: 'Mosaic_Rental_Fee', 4942: 'Namespace_Rental_Fee', 8515: 'Harvest_Fee', 8776: 'LockHash_Completed', 8786: 'LockSecret_Completed', 9032: 'LockHash_Expired', 9042: 'LockSecret_Expired', 12616: 'LockHash_Created', 12626: 'LockSecret_Created', 16717: 'Mosaic_Expired', 16718: 'Namespace_Expired', 16974: 'Namespace_Deleted', 20803: 'Inflation', 57667: 'Transaction_Group', 61763: 'Address_Alias_Resolution', 62019: 'Mosaic_Alias_Resolution'}
 
-8786: 'LockSecret_Completed' :ロック解除完了
-9042: 'LockSecret_Expired'　：ロック期限切れ
+8786: 'LockSecret_Completed' :LockSecret is completed
+9042: 'LockSecret_Expired'　：LockSecret is expired
 ```
 
-## 8.3 現場で使えるヒント
+## 8.3 Tips for use
 
-### 手数料代払い
 
-一般的にブロックチェーンはトランザクション送信に手数料を必要とします。
-そのため、ブロックチェーンを利用しようとするユーザは事前に手数料を取引所から入手しておく必要があります。
-このユーザが企業である場合はその管理方法も加えてさらにハードルの高い問題となります。
-アグリゲートトランザクションを使用することでハッシュロック費用とネットワーク手数料をサービス提供者が代理で負担することができます。
+### Paying the transaction fee instead
 
-### タイマー送信
+Generally blockchains require transaction fees for sending transactions. Therefore, users who want to use blockchains need to get some native currency of the chain for fees (e.g. Symbol's native currency XYM) from the exchange in advance.
+If the user is a company, the way it is managed might be an issue from an operational point of view.
+If it uses Aggregate Transaction, service providers can cover hash lock and transaction fees on behalf of users.
 
-シークレットロックは指定ブロック数を経過すると元のアカウントへ払い戻されます。
-この原理を利用して、シークレットロックしたアカウントにたいしてロック分の費用をサービス提供者が充足しておけば、
-期限が過ぎた後ユーザ側がロック分のトークン所有量が増加することになります。
-一方で、期限が過ぎる前にシークレット証明トランザクションをアナウンスすると、送信が完了し、サービス提供者に充当戻るためキャンセル扱いとなります。
+### Scheduled transactions
 
-### アトミックスワップ
+Secret locks are refunded to the  account which created the transaction after a specified number of blocks.
+Using this, when the service provider charges the cost of the lock for the Secret Lock account, the amount of tokens owned by the user for the lock will increase after the expiry date has passed.
+On the other hand, announcing a secret proof transaction before the deadline has passed is treated as a cancellation as the transaction is completed and the appropriation is returned to the service provider.
 
-シークレットロックを使用して、他のチェーンとのトークン・モザイクの交換を行うことができます。
-他のチェーンではハッシュタイムロックコントラクト(HTLC)と呼ばれているためハッシュロックと間違えないようにご注意ください。
+### Atomic swap
+Secret locks can be used to exchange token mosaics with other chains.
+Please note that this is not to be mistaken for a Hash Lock, as other chains refer to it as a hash time lock contract (HTLC).
