@@ -1,18 +1,18 @@
-# 9.マルチシグ化
+# 9.Multi signature
+Symbol accounts can be converted to multisig.
 
-アカウントのマルチシグ化について説明します。
 
-### 注意事項
+### Points
 
-一つのマルチシグアカウントに登録できる連署者の数は 25 個です。
-一つのアカウントは最大 25 個のマルチシグの連署者になれます。
-マルチシグは最大 3 階層まで構成できます。
-本書では 1 階層のマルチシグのみ解説します。
+Multisig accounts can have up to 25 cosignatories.
+An account can be cosigner of up to 25 multisig accounts.
+Multisig account can compose up to 3 levels. 
+This chapter explain 1 level multisig.
 
-## 9.0 アカウントの準備
+## 9.0 Preparing an account
+Create the accounts used in the sample source code in this chapter and output each secret key.
+Note that the Bob multisig account  in this chapter will be unusable if Carol's secret key is lost.
 
-この章のサンプルソースコードで使用するアカウントを作成し、それぞれの秘密鍵を出力しておきます。
-本章でマルチシグ化したアカウント Bob は、Carol の秘密鍵を紛失すると使えなくなってしまうのでご注意ください。
 
 ```js
 bob = sym.Account.generateNewAccount(networkType);
@@ -21,7 +21,6 @@ carol2 = sym.Account.generateNewAccount(networkType);
 carol3 = sym.Account.generateNewAccount(networkType);
 carol4 = sym.Account.generateNewAccount(networkType);
 carol5 = sym.Account.generateNewAccount(networkType);
-
 console.log(bob.privateKey);
 console.log(carol1.privateKey);
 console.log(carol2.privateKey);
@@ -30,74 +29,60 @@ console.log(carol4.privateKey);
 console.log(carol5.privateKey);
 ```
 
-テストネットの場合は FAUCET でネットワーク手数料分を bob と carol1 に補給しておきます。
+When using a testnet, the equivalent of the network fee from FAUCET should be available in the bob and carol1 accounts.
 
 - Faucet
-  - https://testnet.symbol.tools/
+    - https://testnet.symbol.tools/
 
-##### URL 出力
+##### Output URL
 
 ```js
-console.log(
-  "https://testnet.symbol.tools/?recipient=" +
-    bob.address.plain() +
-    "&amount=20"
-);
-console.log(
-  "https://testnet.symbol.tools/?recipient=" +
-    carol1.address.plain() +
-    "&amount=20"
-);
+console.log("https://testnet.symbol.tools/?recipient=" + bob.address.plain() +"&amount=20");
+console.log("https://testnet.symbol.tools/?recipient=" + carol1.address.plain() +"&amount=20");
 ```
 
-## 9.1 マルチシグの登録
+## 9.1 Multisig registration
 
-Symbol ではマルチシグアカウントを新規に作成するのではなく、既存アカウントについて連署者を指定してマルチシグ化します。
-マルチシグ化には連署者に指定されたアカウントの承諾署名(オプトイン)が必要なため、アグリゲートトランザクションを使用します。
+To have a multisig account, Symbol does not need to create a new one, but rather multisig an existing account by specifying cosignatories.
+Creating a multisig account requires the consent signature (opt-in) of the account designated as the cosignatory, and to confirm it, Aggregate Transaction are used.
 
 ```js
 multisigTx = sym.MultisigAccountModificationTransaction.create(
-  undefined,
-  3, //minApproval:承認のために必要な最小署名者数増分
-  3, //minRemoval:除名のために必要な最小署名者数増分
-  [carol1.address, carol2.address, carol3.address, carol4.address], //追加対象アドレスリスト
-  [], //除名対象アドレスリスト
-  networkType
+    undefined, 
+    3, //minApproval:Minimum incremental number of signatories required for approval
+    3, //minRemoval:Minimum incremental number of signatories required for expulsion
+    [
+        carol1.address,carol2.address,carol3.address,carol4.address
+    ], //Additional target address list
+    [],//Blocked address list
+    networkType
 );
-
 aggregateTx = sym.AggregateTransaction.createComplete(
-  sym.Deadline.create(epochAdjustment),
-  [
-    //マルチシグ化したいアカウントの公開鍵を指定
-    multisigTx.toAggregate(bob.publicAccount),
-  ],
-  networkType,
-  []
-).setMaxFeeForAggregate(100, 4); // 第二引数に連署者の数:4
-
-signedTx = aggregateTx.signTransactionWithCosignatories(
-  bob, //マルチシグ化したいアカウント
-  [carol1, carol2, carol3, carol4], //追加・除外対象として指定したアカウント
-  generationHash
+    sym.Deadline.create(epochAdjustment),
+    [//The public key of the multisig account
+      multisigTx.toAggregate(bob.publicAccount),
+    ],
+    networkType,[]
+).setMaxFeeForAggregate(100, 4); //Number of co-signatories to the second argument:4
+signedTx =  aggregateTx.signTransactionWithCosignatories(
+    bob, //Multisig account
+    [carol1,carol2,carol3,carol4], //Accounts specified as being added or blocked
+    generationHash,
 );
 await txRepo.announce(signedTx).toPromise();
 ```
 
-## 9.2 確認
+## 9.2 Confirmation
 
-### マルチシグ化したアカウントの確認
-
+### Confirmation of multisigged accounts
 ```js
 msigRepo = repo.createMultisigRepository();
-
 multisigInfo = await msigRepo.getMultisigAccountInfo(bob.address).toPromise();
 console.log(multisigInfo);
 ```
-
-###### 出力例
-
+###### Sample outlet
 ```js
-> MultisigAccountInfo
+> MultisigAccountInfo 
     accountAddress: Address {address: 'TCOMA5VG67TZH4X55HGZOXOFP7S232CYEQMOS7Q', networkType: 152}
   > cosignatoryAddresses: Array(4)
         0: Address {address: 'TBAFGZOCB7OHZCCYYV64F2IFZL7SOOXNDHFS5NY', networkType: 152}
@@ -109,23 +94,18 @@ console.log(multisigInfo);
     multisigAddresses: []
 ```
 
-cosignatoryAddresses が連署者として登録されていることがわかります。
-また、minApproval:3 によりトランザクションが成立するために必要な署名数 3
-minRemoval: 3 により連署者を取り外すために必要な署名者数は 3 であることがわかります。
+It shows that cosignatoryAddresses are registered as cosignatories.
+Also, minApproval:3 shows that the number of signatures required for a transaction execution is 3
+minRemoval: 3 shows that the number of signatories required to remove a cosignatory is 3.
 
-### 連署者アカウントの確認
 
+### Confirmation of cosignatory accounts
 ```js
 msigRepo = repo.createMultisigRepository();
-
-multisigInfo = await msigRepo
-  .getMultisigAccountInfo(carol1.address)
-  .toPromise();
+multisigInfo = await msigRepo.getMultisigAccountInfo(carol1.address).toPromise();
 console.log(multisigInfo);
 ```
-
-###### 出力例
-
+###### Sample outlet
 ```
 > MultisigAccountInfo
     accountAddress: Address {address: 'TCV67BMTD2JMDQOJUDQHBFJHQPG4DAKVKST3YJI', networkType: 152}
@@ -136,117 +116,89 @@ console.log(multisigInfo);
         0: Address {address: 'TCOMA5VG67TZH4X55HGZOXOFP7S232CYEQMOS7Q', networkType: 152}
 ```
 
-multisigAddresses に対して連署する権利を持っていることが分かります。
+It shows that the account is a cosignatory of the multisigAddresses.
 
-## 9.3 マルチシグ署名
+## 9.3 Multisig signature
 
-マルチシグ化したアカウントからモザイクを送信します。
+Send mosaics from a multisig account.
 
-### アグリゲートコンプリートトランザクションで送信
+### Transfer with an Aggregate Complete Transaction
 
-アグリゲートコンプリートトランザクションの場合、ノードにアナウンスする前に連署者の署名を全て集めてからトランザクションを作成します。
+In the case of Aggregate Complete Transaction, the transaction is created after collecting all the signatures of the cosignatories before announcing it to the nodes.
 
 ```js
 tx = sym.TransferTransaction.create(
-  undefined,
-  alice.address,
-  [
-    new sym.Mosaic(
-      new sym.NamespaceId("symbol.xym"),
-      sym.UInt64.fromUint(1000000)
-    ),
-  ],
-  sym.PlainMessage.create("test"),
-  networkType
+    undefined,
+    alice.address, 
+    [new sym.Mosaic(new sym.NamespaceId("symbol.xym"),sym.UInt64.fromUint(1000000))],
+    sym.PlainMessage.create('test'),
+    networkType
 );
-
 aggregateTx = sym.AggregateTransaction.createComplete(
-  sym.Deadline.create(epochAdjustment),
-  [
-    //マルチシグ化したアカウントの公開鍵を指定
-    tx.toAggregate(bob.publicAccount),
-  ],
-  networkType,
-  []
-).setMaxFeeForAggregate(100, 2); // 第二引数に連署者の数:2
-
-signedTx = aggregateTx.signTransactionWithCosignatories(
-  carol1, //起案者
-  [carol2, carol3], //連署者
-  generationHash
+    sym.Deadline.create(epochAdjustment),
+     [//The public key of the multisig account
+       tx.toAggregate(bob.publicAccount)
+     ],
+    networkType,[],
+).setMaxFeeForAggregate(100, 2); //Number of co-signatories to the second argument:2
+signedTx =  aggregateTx.signTransactionWithCosignatories(
+    carol1, //Transaction creator
+    [carol2,carol3],　//Cosignatories
+    generationHash,
 );
 await txRepo.announce(signedTx).toPromise();
 ```
 
-### アグリゲートボンデッドトランザクションで送信
+### Transfer with an Aggregate Bonded Transaction
 
-アグリゲートボンデッドトランザクションの場合は連署者を指定せずにアナウンスできます。
-事前にハッシュロックでトランザクションを留め置きしておくことを宣言しておき、連署者がネットワーク上に留め置きされたトランザクションに追加署名することで完成となります。
+Aggregate bonded transactions can be announced without specifying cosignatories.
+It is completed by declaring that the transaction will be pre-stored with a hash lock, and the cosigner additionally signs the transaction once it has been stored on the network.
 
 ```js
 tx = sym.TransferTransaction.create(
-  undefined,
-  alice.address, //Aliceへの送信
-  [
-    new sym.Mosaic(
-      new sym.NamespaceId("symbol.xym"),
-      sym.UInt64.fromUint(1000000)
-    ),
-  ], //1XYM
-  sym.PlainMessage.create("test"),
-  networkType
+    undefined,
+    alice.address, //Transfer to Alice
+    [new sym.Mosaic(new sym.NamespaceId("symbol.xym"),sym.UInt64.fromUint(1000000))], //1XYM
+    sym.PlainMessage.create('test'),
+    networkType
 );
-
 aggregateTx = sym.AggregateTransaction.createBonded(
-  sym.Deadline.create(epochAdjustment),
-  [
-    //マルチシグ化したアカウントの公開鍵を指定
-    tx.toAggregate(bob.publicAccount),
-  ],
-  networkType,
-  []
-).setMaxFeeForAggregate(100, 0); // 第二引数に連署者の数:0
-
+    sym.Deadline.create(epochAdjustment),
+     [ //The public key of the multisig account
+       tx.toAggregate(bob.publicAccount)
+     ],
+    networkType,[],
+).setMaxFeeForAggregate(100, 0); //Number of co-signatories to the second argument:0
 signedAggregateTx = carol1.sign(aggregateTx, generationHash);
-
 hashLockTx = sym.HashLockTransaction.create(
   sym.Deadline.create(epochAdjustment),
-  new sym.Mosaic(
-    new sym.NamespaceId("symbol.xym"),
-    sym.UInt64.fromUint(10 * 1000000)
-  ), //固定値:10XYM
-  sym.UInt64.fromUint(480),
-  signedAggregateTx,
-  networkType
+	new sym.Mosaic(new sym.NamespaceId("symbol.xym"),sym.UInt64.fromUint(10 * 1000000)), //Fixed value:10XYM
+	sym.UInt64.fromUint(480),
+	signedAggregateTx,
+	networkType
 ).setMaxFee(100);
-
 signedLockTx = carol1.sign(hashLockTx, generationHash);
-
-//ハッシュロックTXをアナウンス
+//Announce Hashlock TX
 await txRepo.announce(signedLockTx).toPromise();
 ```
 
 ```js
-//ハッシュロックの承認を確認した後、ボンデッドTXをアナウンス
+//Announces bonded TX after confirming approval of hashlocks
 await txRepo.announceAggregateBonded(signedAggregateTx).toPromise();
 ```
+When a bonded transaction is known by a node, it will be a partial signature state and will be signed with a multisig account, using the cosignature introduced in chapter 8.Locking.
+It can also be confirmed by a wallet that supports cosignatures.
 
-ボンデッドトランザクションがノードに取り込まれるとパーシャル署名状態となるので、8.ロックで紹介した連署を使用して、マルチシグアカウントで連署します。
-連署をサポートするウォレットで承認することもできます。
 
-## 9.4 マルチシグ送信の確認
+## 9.4 Confirmation of multisig transferring
 
-マルチシグで行った送信トランザクションの結果を確認してみます。
+Check the results of a multisig transferring transaction.
 
 ```js
-txInfo = await txRepo
-  .getTransaction(signedTx.hash, sym.TransactionGroup.Confirmed)
-  .toPromise();
+txInfo = await txRepo.getTransaction(signedTx.hash,sym.TransactionGroup.Confirmed).toPromise();
 console.log(txInfo);
 ```
-
-###### 出力例
-
+###### Sample outlet
 ```js
 > AggregateTransaction
   > cosignatures: Array(2)
@@ -283,7 +235,7 @@ console.log(txInfo);
   > signer: PublicAccount
         address: Address {address: 'TCV67BMTD2JMDQOJUDQHBFJHQPG4DAKVKST3YJI', networkType: 152}
         publicKey: "FF9595FDCD983F46FF9AE0F7D86D94E9B164E385BD125202CF16528F53298656"
-  > transactionInfo:
+  > transactionInfo: 
         hash: "AA99F8F4000F989E6F135228829DB66AEB3B3C4B1F06BA77D373D042EAA4C8DA"
         height: UInt64 {lower: 322376, higher: 0}
         id: "62600A8C0A21EB5CD28679A3"
@@ -291,111 +243,101 @@ console.log(txInfo);
     type: 16705
 ```
 
-- マルチシグアカウント
-  - Bob
-    - AggregateTransaction.innerTransactions[0].signer.address
-      - TCOMA5VG67TZH4X55HGZOXOFP7S232CYEQMOS7Q
-- 起案者アカウント
-  - Carol1
-    - AggregateTransaction.signer.address
-      - TCV67BMTD2JMDQOJUDQHBFJHQPG4DAKVKST3YJI
-- 連署者アカウント
-  - Carol2
-    - AggregateTransaction.cosignatures[0].signer.address
-      - TB3XP4GQK6XH2SSA2E2U6UWCESNACK566DS4COY
-  - Carol3
-    - AggregateTransaction.cosignatures[1].signer.address
-      - TBAFGZOCB7OHZCCYYV64F2IFZL7SOOXNDHFS5NY
+- Multisig account
+    - Bob
+        - AggregateTransaction.innerTransactions[0].signer.address
+            - TCOMA5VG67TZH4X55HGZOXOFP7S232CYEQMOS7Q
+- Creator's account
+    - Carol1
+        - AggregateTransaction.signer.address
+            - TCV67BMTD2JMDQOJUDQHBFJHQPG4DAKVKST3YJI
+- Cosigner account
+    - Carol2
+        - AggregateTransaction.cosignatures[0].signer.address
+            - TB3XP4GQK6XH2SSA2E2U6UWCESNACK566DS4COY
+    - Carol3
+        - AggregateTransaction.cosignatures[1].signer.address
+            - TBAFGZOCB7OHZCCYYV64F2IFZL7SOOXNDHFS5NY
 
-## 9.5 マルチシグ構成変更
+## 9.5 Modifying a multisig account min approval
 
-### マルチシグ構成の縮小
+### Reduced multisig configuration
 
-連署者を減らすには除名対象アドレスに指定するとともに最小署名者数を連署者数が超えてしまわないように調整してトランザクションをアナウンスします。
-除名対象者を連署者に含む必要はありません。
+To reduce the number of co-signatories, designate the address for removing and adjust the number of cosignatories so that the minimum number of signatories is not exceeded and announce the transaction.
+It is not necessary to include the account subject to remove as a cosignatory.
 
 ```js
 multisigTx = sym.MultisigAccountModificationTransaction.create(
-  undefined,
-  -1, //承認のために必要な最小署名者数増分
-  -1, //除名のために必要な最小署名者数増分
-  [], //追加対象アドレス
-  [carol3.address], //除名対象アドレス
-  networkType
+    undefined, 
+    -1, //Minimum incremental number of signatories required for approval
+    -1, //Minimum incremental number of signatories required for remove
+    [], //Additional target address
+    [carol3.address],//Address to removing
+    networkType
 );
-
 aggregateTx = sym.AggregateTransaction.createComplete(
-  sym.Deadline.create(epochAdjustment),
-  [
-    //構成変更したいマルチシグアカウントの公開鍵を指定
-    multisigTx.toAggregate(bob.publicAccount),
-  ],
-  networkType,
-  []
-).setMaxFeeForAggregate(100, 1); // 第二引数に連署者の数:1
-
-signedTx = aggregateTx.signTransactionWithCosignatories(
-  carol1,
-  [carol2],
-  generationHash
+    sym.Deadline.create(epochAdjustment),
+    [ //Specify the public key of the multisig account which configuration you want to change
+      multisigTx.toAggregate(bob.publicAccount),
+    ],
+    networkType,[]    
+).setMaxFeeForAggregate(100, 1); //Number of co-signatories to the second argument:1
+signedTx =  aggregateTx.signTransactionWithCosignatories(
+    carol1,
+    [carol2],
+    generationHash,
 );
 await txRepo.announce(signedTx).toPromise();
 ```
 
-### 連署者構成の差替え
+### Replacement of cosignatory composition
 
-連署者を差し替えるには、追加対象アドレスと除名対象アドレスを指定します。
-新たに追加指定するアカウントの連署は必ず必要です。
+To replace a cosignatory, specify the address to be added and the address to be removed.
+The cosignature of the new additionally designated account is always required.
 
 ```js
 multisigTx = sym.MultisigAccountModificationTransaction.create(
-  undefined,
-  0, //承認のために必要な最小署名者数増分
-  0, //除名のために必要な最小署名者数増分
-  [carol5.address], //追加対象アドレス
-  [carol4.address], //除名対象アドレス
-  networkType
+    undefined, 
+    0, //Minimum incremental number of signatories required for approval
+    0, //Minimum incremental number of signatories required for remove
+    [carol5.address], //Additional target address
+    [carol4.address], //Address to removing
+    networkType
 );
-
 aggregateTx = sym.AggregateTransaction.createComplete(
-  sym.Deadline.create(epochAdjustment),
-  [
-    //構成変更したいマルチシグアカウントの公開鍵を指定
-    multisigTx.toAggregate(bob.publicAccount),
-  ],
-  networkType,
-  []
-).setMaxFeeForAggregate(100, 2); // 第二引数に連署者の数:2
-
-signedTx = aggregateTx.signTransactionWithCosignatories(
-  carol1, //起案者
-  [carol2, carol5], //連署者+承諾アカウント
-  generationHash
+    sym.Deadline.create(epochAdjustment),
+    [ //Specify the public key of the multisig account which configuration you want to change
+      multisigTx.toAggregate(bob.publicAccount),
+    ],
+    networkType,[]    
+).setMaxFeeForAggregate(100, 2); //Number of co-signatories to the second argument:
+signedTx =  aggregateTx.signTransactionWithCosignatories(
+    carol1, //Transaction creator
+    [carol2,carol5], //Cosignatory + Consent account
+    generationHash,
 );
 await txRepo.announce(signedTx).toPromise();
 ```
 
-## 9.6 現場で使えるヒント
+## 9.6 Tips for use
 
-### 多要素認証
+### Multi-factor authorization
 
-秘密鍵の管理を複数の端末に分散させることができます。
-セキュリティ用の鍵を用意しておけば、紛失・漏洩時にも安全に回復することができます。
-また、マルチシグの安全運用については盗難時と紛失時の 2 パターンを検討しておく必要があるのでご注意ください。
+The management of private key can be distributed across multiple terminals.
+To ensure safe recovery in the event of loss or leakage if a security key can be prepared.
+Please note that it is also necessary to consider two patterns of multisig safe operation that can be stolen and lost.
+- Stolen：Other one can use the private key.
+- Lost：No one will be able to use the private key.
 
-- 盗難時：ほかにも秘密鍵を使える人がいる。
-- 紛失時：だれもその秘密鍵を使えなくなる。
 
-### アカウントの所有
+### Account ownership
 
-マルチシグ化したアカウントの秘密鍵は無効化し、マルチシグを解除しない限りたとえ秘密鍵を知っていたとしても
-モザイク送信などはできなくなります。
-モザイクの章で説明した通り、所有を「自分の意思で手放すことができる状態」だとすると、
-マルチシグ化したアカウントがもつモザイク等の所有者は連署者になります。
-また、Symbol ではマルチシグの構成変更が可能ですのでアカウントの所有を他の連署者に安全に移転することができます。
+The private key of a multisig account is deactivated and unless the account is un-multisigged, even if the private key is known. Mosaic transferring will no longer be possible.
+As explained in chapter 5. Mosaics, that possession is a “the state of being able to give it up at will', it can be said the owner of the mosaic, etc. that the multisigged account has is the cosignatory.
+And Symbol allows replacement of cosignatory in composition of multisig, so account ownership can be securely replaceable to another cosignatory.
 
-### ワークフロー
+### Work flow
 
-Symbol ではマルチシグを 3 階層まで構成することができます(マルチレベルマルチシグ)。
-マルチレベルマルチシグを用いることで、バックアップ鍵を不正に持ち出して連署を完成させたり、承認者と監査役だけで署名を完成させるといったことを防ぐことができます。
-これによって、ブロックチェーン上にトランザクションが存在することが現実社会のワークフローなどの条件を満たした証拠として提示することができます。
+Symbol allows you to configure up to 3 levels of multisig (multi-level multisig).
+The use of multi-level multisig accounts prevents the use of stolen backup keys to complete a multisig, or the use of only an approver and an auditor to complete a signature.
+This allows the existence of transactions on the blockchain to be presented as evidence that actual operations and other conditions have been met.
