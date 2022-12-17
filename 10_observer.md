@@ -1,10 +1,10 @@
-# 10.監視
+# 10.Monitoring
 
-Symbol のノードは WebSocket 通信でブロックチェーンの状態変化を監視することが可能です。
+Symbol nodes can monitor blockchain state changes via WebSocket communication.
 
-## 10.1 リスナー設定
+## 10.1 Listener configuration
 
-WebSocket を生成してリスナーの設定を行います。
+Generate a WebSocket and configure a listener.
 
 ```js
 nsRepo = repo.createNamespaceRepository();
@@ -13,35 +13,34 @@ listener = new sym.Listener(wsEndpoint, nsRepo, WebSocket);
 listener.open();
 ```
 
-エンドポイントのフォーマットは以下の通りです。
+The format of the endpoints is as follows.
 
 - wss://{node url}:3001/ws
 
-何も通信が無ければ、listener は 1 分で切断されます。
+If there is no communication, the listener is disconnected after one minute.
 
-## 10.2 受信検知
+## 10.2 Receiving transactions
 
-アカウントが受信したトランザクションを検知します。
+Detects transactions received by the account.
 
 ```js
 listener.open().then(() => {
-  //承認トランザクションの検知
+  //Detection of approval transactions
   listener.confirmed(alice.address).subscribe((tx) => {
-    //受信後の処理を記述
+    //Describes the process after reception
     console.log(tx);
   });
-
-  //未承認トランザクションの検知
+  //Detection of unconfirmed transactions
   listener.unconfirmedAdded(alice.address).subscribe((tx) => {
-    //受信後の処理を記述
+    //Describes the process after reception
     console.log(tx);
   });
 });
 ```
 
-上記リスナーを実行後、alice への送信トランザクションをアナウンスしてください。
+After executing the above listener, announce the transaction to be sent to ALICE.
 
-###### 出力例
+###### Sample outlet
 
 ```js
 > Promise {<pending>}
@@ -65,20 +64,20 @@ listener.open().then(() => {
     version: 1
 ```
 
-未承認トランザクションは transactionInfo.height=0 　で受信します。
+Unconfirmed transactions are received with transactionInfo.height=0.
 
-## 10.3 ブロック監視
+## 10.3 Block monitoring
 
-新規に生成されたブロックを検知します。
+Detects newly generated block.
 
 ```js
 listener.open().then(() => {
-  //ブロック生成の検知
+  //Detection of block generation
   listener.newBlock().subscribe((block) => console.log(block));
 });
 ```
 
-###### 出力例
+###### Sample outlet
 
 ```js
 > Promise {<pending>}
@@ -104,27 +103,26 @@ listener.open().then(() => {
     version: 1
 ```
 
-listener.newBlock()をしておくと、約 30 秒ごとに通信が発生するので WebSocket の切断が起こりにくくなります。  
-まれに、ブロック生成が 1 分を超える場合があるのでその場合はリスナーを再接続する必要があります。
-（その他の事象で切断される可能性もあるので、万全を期したい場合は後述する onclose で補足しましょう）
+If listener.newBlock() is used, communication occurs approximately every 30 seconds, making WebSocket disconnections less likely to occur.  
+In rare cases, block generation may exceed one minute, in which case the listener must be reconnected.
+(Other reasons may also cause disconnection, so if you want to be sure, supplement with onclose as described below.)
 
-## 10.4 署名要求
+## 10.4 Signature request
 
-署名が必要なトランザクションが発生すると検知します。
+Detects when a transaction requiring a signature occurs.
 
 ```js
 listener.open().then(() => {
-  //署名が必要なアグリゲートボンデッドトランザクション発生の検知
+  //Detection of Aggregate Bonded Transaction occurrences requiring signatures
   listener
     .aggregateBondedAdded(alice.address)
     .subscribe(async (tx) => console.log(tx));
 });
 ```
 
-###### 出力例
+###### Sample outlet
 
 ```js
-
 > AggregateTransaction
     cosignatures: []
     deadline: Deadline {adjustedValue: 12450154608}
@@ -143,31 +141,28 @@ listener.open().then(() => {
         merkleComponentHash: "0000000000000000000000000000000000000000000000000000000000000000"
     type: 16961
     version: 1
-
 ```
 
-指定アドレスが関係するすべてのアグリゲートトランザクションが検知されます。
-連署が必要かどうかは別途フィルターして判断します。
+All Aggregate Transactions involving the specified address are detected.
+Whether a cosignature is required is determined by a separate filter.
 
-## 10.5 現場で使えるヒント
+## 10.5 Tips for use
 
-### 常時コネクション
+### Continuous connection
 
-一覧からランダムに選択し、接続を試みます。
+Select randomly from the list and try to connect.
 
-##### ノードへの接続
+##### Connection to node
 
 ```js
-//ノード一覧
+//Node list
 NODES = ["https://node.com:3001",...];
-
 function connectNode(nodes) {
     const node = nodes[Math.floor(Math.random() * nodes.length)] ;
     console.log("try:" + node);
-
     return new Promise((resolve, reject) => {
         let req = new XMLHttpRequest();
-        req.timeout = 2000; //タイムアウト値:2秒(=2000ms)
+        req.timeout = 2000; //timeout value:2sec(=2000ms)
         req.open('GET', node + "/node/health", true);
         req.onload = function() {
             if (req.status === 200) {
@@ -183,32 +178,28 @@ function connectNode(nodes) {
                 return connectNode(nodes).then(node => resolve(node));
             }
         };
-
         req.onerror = function(e) {
             console.log("onerror:" + e)
             return connectNode(nodes).then(node => resolve(node));
         };
-
         req.ontimeout = function (e) {
             console.log("ontimeout")
             return connectNode(nodes).then(node => resolve(node));
         };
-
     req.send();
     });
 }
 ```
 
-タイムアウト値を設定しておき、応答の悪いノードに接続した場合は選びなおします。
-エンドポイント /node/health 　を確認してステータス異常の場合はノードを選びなおします。
+Set a timeout value and re-select a node if connected node response is slow.
+Check the endpoint /node/health and reselect the node if the status is not normal.
 
-##### レポジトリの作成
+##### Creation of repositories
 
 ```js
 function createRepo(nodes) {
   return connectNode(nodes).then(async function onFulfilled(node) {
     const repo = new sym.RepositoryFactoryHttp(node);
-
     try {
       epochAdjustment = await repo.getEpochAdjustment().toPromise();
     } catch (error) {
@@ -220,10 +211,10 @@ function createRepo(nodes) {
 }
 ```
 
-まれに /network/properties のエンドポイントが解放されていないノードが存在するため、
-getEpochAdjustment() の情報を取得してチェックを行います。取得できない場合は再帰的に createRepo を読み込みます。
+In rare cases, there are some nodes for which the /network/properties endpoint has not been freed, so the
+getEpochAdjustment() information is retrieved and checked. If it cannot be obtained, createRepo is read recursively.
 
-##### リスナーの常時接続
+##### Continuous connection listeners
 
 ```js
 async function listenerKeepOpening(nodes) {
@@ -238,7 +229,6 @@ async function listenerKeepOpening(nodes) {
     console.log("fail websocket");
     return await listenerKeepOpening(nodes);
   }
-
   lner.webSocket.onclose = async function () {
     console.log("listener onclose");
     return await listenerKeepOpening(nodes);
@@ -247,24 +237,23 @@ async function listenerKeepOpening(nodes) {
 }
 ```
 
-リスナーが close した場合は再接続します。
+If the listener closes, it reconnects.
 
-##### リスナー開始
+##### Start of listener.
 
 ```js
 listener = await listenerKeepOpening(NODES);
 ```
 
-### 未署名トランザクション自動連署
+### Unsigned transaction auto-signature
 
-未署名のトランザクションを検知して、署名＆ネットワークにアナウンスします。  
-初期画面表示時と画面閲覧中の受信と２パターンの検知が必要です。
+Detect unsigned transactions, then sign and announce to the network.  
+Two patterns of detection are required: reception during initial screen display and during screen viewing.
 
 ```js
-//rxjs.operatorsの読み込み
+//read rxjs.operators
 op = require("/node_modules/rxjs/operators");
-
-//アグリゲートトランザクション検知
+//Aggregate Transaction detection
 bondedListener = listener.aggregateBondedAdded(bob.address);
 bondedHttp = txRepo
   .search({ address: bob.address, group: sym.TransactionGroup.Partial })
@@ -272,8 +261,7 @@ bondedHttp = txRepo
     op.delay(2000),
     op.mergeMap((page) => page.data)
   );
-
-//選択中アカウントの完了トランザクション検知リスナー
+//Completed transaction detection listeners for selected accounts
 const statusChanged = function (address, hash) {
   const transactionObservable = listener.confirmed(address);
   const errorObservable = listener.status(address, hash);
@@ -288,8 +276,7 @@ const statusChanged = function (address, hash) {
     })
   );
 };
-
-//連署実行
+//Cosignature execution
 function exeAggregateBondedCosignature(tx) {
   txRepo
     .getTransactionsById(
@@ -297,17 +284,17 @@ function exeAggregateBondedCosignature(tx) {
       sym.TransactionGroup.Partial
     )
     .pipe(
-      //トランザクションが抽出された場合のみ
+      //Only if the transaction is detected
       op.filter((aggTx) => aggTx.length > 0)
     )
     .subscribe(async (aggTx) => {
-      //インナートランザクションの署名者に自分が指定されている場合
+      //If my account is designated as the signatory of the inner transaction
       if (
         aggTx[0].innerTransactions.find((inTx) =>
           inTx.signer.equals(bob.publicAccount)
         ) != undefined
       ) {
-        //Aliceのトランザクションで署名
+        //Sign with Alice transaction
         const cosignatureTx = sym.CosignatureTransaction.create(aggTx[0]);
         const signedTx = bob.signCosignatureTransaction(cosignatureTx);
         const cosignedAggTx = await txRepo
@@ -319,11 +306,10 @@ function exeAggregateBondedCosignature(tx) {
       }
     });
 }
-
 bondedSubscribe = function (observer) {
   observer
     .pipe(
-      //すでに署名済みでない場合
+      //If not already signed
       op.filter((tx) => {
         return !tx.signedByAccount(
           sym.PublicAccount.createFromPublicKey(bob.publicKey, networkType)
@@ -335,12 +321,10 @@ bondedSubscribe = function (observer) {
       exeAggregateBondedCosignature(tx);
     });
 };
-
 bondedSubscribe(bondedListener);
 bondedSubscribe(bondedHttp);
 ```
 
-##### 注意事項
+##### Note
 
-スキャムトランザクションを自動署名しないように、
-送信元のアカウントを確認するなどのチェック処理を必ず実施するようにしてください。
+To avoid auto-signing with scam transactions, make sure that ensuring a checking process is carried out, e.g. by checking the sender's account.

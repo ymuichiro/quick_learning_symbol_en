@@ -1,60 +1,60 @@
-### 今日から現場で使える
+### Start the Symbol blockchain practically from today
 
-# 速習 Symbol ブロックチェーン
+# Quick learning Symbol
 
-## 著作者
+## Author
 
 ### XEMBook
 
-## 他言語版
+## Other language
 
-[日本語](https://learn.ja.symbol-community.com)
+[Japanese](https://learn.ja.symbol-community.com)
 
-## 目次
+## Table of contents
 
-### [1.はじめに](./01_introduction.md)
+### [1.Introduction](./01_introduction.md)
 
-### [2.環境構築](./02_setting.md)
+### [2.Building a development environment](./02_setting.md)
 
-### [3.アカウント](./03_account.md)
+### [3.Account](./03_account.md)
 
-- [3.1 アカウント作成](03_account.md#31-アカウント生成)
-- [3.2 アカウントへの送信](03_account.md#32-アカウントへの送信)
-- [3.3 アカウント情報の確認](03_account.md#33-アカウント情報の確認)
-- [3.4 現場で使えるヒント](https://github.com/xembook/quick_learning_symbol/blob/main/03_account.md#34-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
+- [3.1 Account](03_account.md#31-Creating an account)
+- [3.2 A TransferTransaction to another account](03_account.md#32-A TransferTransaction to another account)
+- [3.3 Check account information](03_account.md#33-Check account information)
+- [3.4 Tips for use](https://github.com/xembook/quick_learning_symbol/blob/main/03_account.md#34-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
 
-### [4.トランザクション](./04_transaction.md)
+### [4.Transaction](./04_transaction.md)
 
-- [4.1 トランザクションのライフサイクル](04_transaction.md#41-%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B6%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E3%83%A9%E3%82%A4%E3%83%95%E3%82%B5%E3%82%A4%E3%82%AF%E3%83%AB)
-- [4.2 トランザクション作成](04_transaction.md#42-%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B6%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3%E4%BD%9C%E6%88%90)
-- [4.3 署名とアナウンス](04_transaction.md#43-%E7%BD%B2%E5%90%8D%E3%81%A8%E3%82%A2%E3%83%8A%E3%82%A6%E3%83%B3%E3%82%B9)
-- [4.4 確認](04_transaction.md#44-%E7%A2%BA%E8%AA%8D)
-- [4.5 トランザクション履歴](04_transaction.md#45%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B6%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3%E5%B1%A5%E6%AD%B4)
-- [4.6 アグリゲートトランザクション](04_transaction.md#46-%E3%82%A2%E3%82%B0%E3%83%AA%E3%82%B2%E3%83%BC%E3%83%88%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B6%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3)
-- [4.7 現場で使えるヒント](04_transaction.md#47-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
+- [4.1 Transaction lifecycle](04_transaction.md#41-%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B6%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3%E3%81%AE%E3%83%A9%E3%82%A4%E3%83%95%E3%82%B5%E3%82%A4%E3%82%AF%E3%83%AB)
+- [4.2 Transaction creation](04_transaction.md#42-%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B6%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3%E4%BD%9C%E6%88%90)
+- [4.3 Signature and announcement](04_transaction.md#43-%E7%BD%B2%E5%90%8D%E3%81%A8%E3%82%A2%E3%83%8A%E3%82%A6%E3%83%B3%E3%82%B9)
+- [4.4 Confirmation](04_transaction.md#44-%E7%A2%BA%E8%AA%8D)
+- [4.5 Transaction history](04_transaction.md#45%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B6%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3%E5%B1%A5%E6%AD%B4)
+- [4.6 Aggregate Transactions](04_transaction.md#46-%E3%82%A2%E3%82%B0%E3%83%AA%E3%82%B2%E3%83%BC%E3%83%88%E3%83%88%E3%83%A9%E3%83%B3%E3%82%B6%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3)
+- [4.7 Tips for use](04_transaction.md#47-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
 
-### [5.モザイク](./05_mosaic.md)
+### [5.Mosaics](./05_mosaic.md)
 
-- [5.1 モザイク生成](05_mosaic.md#51-%E3%83%A2%E3%82%B6%E3%82%A4%E3%82%AF%E7%94%9F%E6%88%90)
-- [5.2 モザイク送信](05_mosaic.md#52-%E3%83%A2%E3%82%B6%E3%82%A4%E3%82%AF%E9%80%81%E4%BF%A1)
-- [5.3 現場で使えるヒント](05_mosaic.md#53-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
+- [5.1 Mosaic generation](05_mosaic.md#51-%E3%83%A2%E3%82%B6%E3%82%A4%E3%82%AF%E7%94%9F%E6%88%90)
+- [5.2 Mosaic transfer](05_mosaic.md#52-%E3%83%A2%E3%82%B6%E3%82%A4%E3%82%AF%E9%80%81%E4%BF%A1)
+- [5.3 Tips for use](05_mosaic.md#53-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
 
-### [6.ネームスペース](./06_namespace.md)
+### [6.Namespace](./06_namespace.md)
 
-- [6.1 手数料の計算](06_namespace.md#61-%E6%89%8B%E6%95%B0%E6%96%99%E3%81%AE%E8%A8%88%E7%AE%97)
-- [6.2 レンタル](06_namespace.md#62-%E3%83%AC%E3%83%B3%E3%82%BF%E3%83%AB)
-- [6.3 リンク](06_namespace.md#63-%E3%83%AA%E3%83%B3%E3%82%AF)
-- [6.4 未解決で使用](06_namespace.md#64-%E6%9C%AA%E8%A7%A3%E6%B1%BA%E3%81%A7%E4%BD%BF%E7%94%A8)
-- [6.5 参照](06_namespace.md#65-%E5%8F%82%E7%85%A7)
-- [6.6 現場で使えるヒント](06_namespace.md#66-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
+- [6.1 Fee calculation](06_namespace.md#61-%E6%89%8B%E6%95%B0%E6%96%99%E3%81%AE%E8%A8%88%E7%AE%97)
+- [6.2 Rental](06_namespace.md#62-%E3%83%AC%E3%83%B3%E3%82%BF%E3%83%AB)
+- [6.3 Link](06_namespace.md#63-%E3%83%AA%E3%83%B3%E3%82%AF)
+- [6.4 Use as an UnresolvedAccount](06_namespace.md#64-%E6%9C%AA%E8%A7%A3%E6%B1%BA%E3%81%A7%E4%BD%BF%E7%94%A8)
+- [6.5 Reference](06_namespace.md#65-%E5%8F%82%E7%85%A7)
+- [6.6 Tips for use](06_namespace.md#66-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
 
-### [7.メタデータ](./07_metadata.md)
+### [7.Metadata](./07_metadata.md)
 
-- [7.1 アカウントに登録](07_metadata.md#71-%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E3%81%AB%E7%99%BB%E9%8C%B2)
-- [7.2 モザイクに登録](07_metadata.md#72-%E3%83%A2%E3%82%B6%E3%82%A4%E3%82%AF%E3%81%AB%E7%99%BB%E9%8C%B2)
-- [7.3 ネームスペースに登録](07_metadata.md#73-%E3%83%8D%E3%83%BC%E3%83%A0%E3%82%B9%E3%83%9A%E3%83%BC%E3%82%B9%E3%81%AB%E7%99%BB%E9%8C%B2)
-- [7.4 確認](07_metadata.md#74-%E7%A2%BA%E8%AA%8D)
-- [7.5 現場で使えるヒント](07_metadata.md#75-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
+- [7.1 Register for account](07_metadata.md#71-%E3%82%A2%E3%82%AB%E3%82%A6%E3%83%B3%E3%83%88%E3%81%AB%E7%99%BB%E9%8C%B2)
+- [7.2 Register for mosaic](07_metadata.md#72-%E3%83%A2%E3%82%B6%E3%82%A4%E3%82%AF%E3%81%AB%E7%99%BB%E9%8C%B2)
+- [7.3 Register for namespace](07_metadata.md#73-%E3%83%8D%E3%83%BC%E3%83%A0%E3%82%B9%E3%83%9A%E3%83%BC%E3%82%B9%E3%81%AB%E7%99%BB%E9%8C%B2)
+- [7.4 Confirmation](07_metadata.md#74-%E7%A2%BA%E8%AA%8D)
+- [7.5 Tips for use](07_metadata.md#75-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
 
 ### [8.ロック](./08_lock.md)
 

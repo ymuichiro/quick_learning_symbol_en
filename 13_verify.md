@@ -1,15 +1,15 @@
-# 13.検証
+# 13.Validation
 
-ブロックチェーン上に記録されたさまざまな情報を検証します。
-ブロックチェーンへのデータ記録は全ノードの合意を持って行われますが、
-ブロックチェーンへの**データ参照**はノード単体からの情報取得であるため、
-信用できないノードの情報を元にして新たな取引を行いたい場合は、ノードから取得したデータに対して検証を行う必要があります。
+Verify the various types of information recorded on the blockchain.
+While data recording on the blockchain is done with the agreement of all nodes.
+However, **referencing data** to the blockchain is done by obtaining information from the node alone, so If a new transaction is to be made based on information from an untrusted node, the data obtained from the node must be verified.
 
-## 13.1 トランザクションの検証
 
-トランザクションがブロックヘッダーに含まれていることを検証します。この検証が成功すれば、トランザクションがブロックチェーンの合意によって承認されたものとみなすことができます。
+## 13.1 Transaction validation
 
-本章のサンプルスクリプトを実行する前に以下を実行して必要ライブラリを読み込んでおいてください。
+Verify that the transaction is included in the block header. If this verification succeeds, the transaction can be considered as authorised by the blockchain agreement.
+
+Before running the sample scripts in this chapter, please load the following  necessary libraries.
 
 ```js
 Buffer = require("/node_modules/buffer").Buffer;
@@ -21,9 +21,9 @@ blockRepo = repo.createBlockRepository();
 stateProofService = new sym.StateProofService(repo);
 ```
 
-### 検証するペイロード
+### Payload to be verified
 
-今回検証するトランザクションペイロードとそのトランザクションが記録されているとされるブロック高です。
+The transaction payload to be verified in this case and the block height at which the transaction is supposed to have been recorded.
 
 ```js
 payload =
@@ -31,9 +31,9 @@ payload =
 height = 59639;
 ```
 
-### payload 確認
+### Payload validation
 
-トランザクションの内容を確認します。
+Verify the contents of the transaction.
 
 ```js
 tx = sym.TransactionMapping.createFromPayload(payload);
@@ -45,7 +45,7 @@ console.log(hash);
 console.log(tx);
 ```
 
-###### 出力例
+###### Sample outlet
 
 ```js
 > 257E2CAECF4B477235CA93C37090E8BE58B7D3812A012E39B7B55BA7D7FFCB20
@@ -71,10 +71,9 @@ console.log(tx);
       type: 16705
 ```
 
-### 署名者の検証
+### Signatories validation
 
-トランザクションがブロックに含まれていることが確認できれば自明ですが、  
-念のため、アカウントの公開鍵でトランザクションの署名を検証しておきます。
+It can be confirmed if the transaction is included in the block, but just to make sure, verify the signature of the transaction with the account's public key.
 
 ```js
 res = alice.publicAccount.verifySignature(
@@ -91,14 +90,14 @@ console.log(res);
 > true
 ```
 
-getSigningBytes で署名の対象となる部分だけを取り出しています。  
-通常のトランザクションとアグリゲートトランザクションでは取り出す部分が異なるので注意が必要です。
+Only the part to be signed is extracted in getSigningBytes.  
+Note that the part to be extracted is different for normal transactions and Aggregate Transactions.
 
-### マークルコンポーネントハッシュの計算
+### Calculation of the merkle component hash
 
-トランザクションのハッシュ値には連署者の情報が含まれていません。  
-一方でブロックヘッダーに格納されるマークルルートはトランザクションのハッシュに連署者の情報が含めたものが格納されます。  
-そのためトランザクションがブロック内部に存在しているかどうかを検証する場合は、トランザクションハッシュをマークルコンポーネントハッシュに変換しておく必要があります。
+The hash value of the transaction does not contain information on the cosignatory.  
+On the other hand, the merkle root stored in the block header contains a hash of the transaction with the information of the cosignatory included.  
+Therefore, when verifying whether a transaction exists inside a block, the transaction hash must be converted to a merkle component hash.
 
 ```js
 merkleComponentHash = hash;
@@ -117,9 +116,9 @@ console.log(merkleComponentHash);
 > C8D1335F07DE05832B702CACB85B8EDAC2F3086543C76C9F56F99A0861E8F235
 ```
 
-### InBlock の検証
+### InBlock validation
 
-ノードからマークルツリーを取得し、先ほど計算した merkleComponentHash からブロックヘッダーのマークルルートが導出できることを確認します。
+Retrieve the markle tree from the node and check that the markle root of the block header can be derived from the merkleComponentHash calculated.
 
 ```js
 function validateTransactionInBlock(leaf, HRoot, merkleProof) {
@@ -139,10 +138,10 @@ function validateTransactionInBlock(leaf, HRoot, merkleProof) {
   return HRoot.toUpperCase() === HRoot0.toUpperCase();
 }
 
-//トランザクションから計算
+//Calculat from transaction
 leaf = merkleComponentHash.toLowerCase(); //merkleComponentHash
 
-//ノードから取得
+//Retrieve from node
 HRoot = (await blockRepo.getBlockByHeight(height).toPromise())
   .blockTransactionsHash;
 merkleProof = (await blockRepo.getMerkleTransaction(height, leaf).toPromise())
@@ -156,13 +155,13 @@ console.log(result);
 > true
 ```
 
-トランザクションの情報がブロックヘッダーに含まれていることが確認できました。
+It has been verified that the transaction information is contained in the block header.
 
-## 13.2 ブロックヘッダーの検証
+## 13.2 Block headers validation
 
-既知のブロックハッシュ値（例：ファイナライズブロック）から、検証中のブロックヘッダーまでたどれることを検証します。
+Verify that the known block hash value (e.g. finalised block) can be traced back to the block header under verification.
 
-### normal ブロックの検証
+### Normal block validation
 
 ```js
 block = await blockRepo.getBlockByHeight(height).toPromise();
@@ -205,16 +204,17 @@ if (block.type === sym.BlockType.NormalBlock) {
 }
 ```
 
-true が出力されればこのブロックハッシュは前ブロックハッシュ値の存在を認知していることになります。  
-同様にして n 番目のブロックが n-1 番目のブロックを存在を確認し、最後に検証中のブロックにたどり着きます。
+If output was true, this block hash acknowledges the existence of the previous block hash value.
+In the same way, the "n"th block confirms the existence of the "n-1th" block and finally arrives at the block under verification.
 
-これで、どのノードに問い合わせても確認可能な既知のファイナライズブロックが、  
-検証したいブロックの存在に支えられていることが分かりました。
+Now we have a known finalised block that can be verified by querying any node.
+supported by the existence of the block to be verified.
 
-### importance ブロックの検証
 
-importanceBlock は、importance 値の再計算が行われるブロック(720 ブロック毎、テストネットは 180 ブロック毎)です。  
-NormalBlock に加えて以下の情報が追加されています。
+### Importance block validation
+
+ImportanceBlock is the block (every 720 blocks, every 180 blocks for Testnet) where the importance value is recalculated.  
+In addition to the NormalBlock, the following information is added.
 
 - votingEligibleAccountsCount
 - harvestingEligibleAccountsCount
@@ -279,9 +279,9 @@ if (block.type === sym.BlockType.ImportanceBlock) {
 }
 ```
 
-後述するアカウントやメタデータの検証のために、stateHashSubCacheMerkleRoots を検証しておきます。
+Verify stateHashSubCacheMerkleRoots for account and metadata verification, described below.
 
-### stateHash の検証
+### Importance block stateHash validation
 
 ```js
 console.log(block);
@@ -323,17 +323,17 @@ console.log(block.stateHash === hash);
 > true
 ```
 
-ブロックヘッダーの検証に利用した 9 個の state が stateHashSubCacheMerkleRoots から構成されていることがわかります。
+It can be seen that the nine states used to validate the block headers consist of stateHashSubCacheMerkleRoots.
 
-## 13.3 アカウント・メタデータの検証
+## 13.3 Account・meta data validation
 
-マークルパトリシアツリーを利用して、トランザクションに紐づくアカウントやメタデータの存在を検証します。  
-サービス提供者がマークルパトリシアツリーを提供すれば、利用者は自分の意志で選択したノードを使ってその真偽を検証することができます。
+The Markle Patricia Tree is used to verify the existence of accounts and metadata associated with a transaction.  
+If the service provider provides a Markle Patricia tree, users can verify its authenticity using nodes of their own choosing.
 
-### 検証用共通関数
+### Common functions for verification
 
 ```js
-//葉のハッシュ値取得関数
+//Function for obtaining the hash value of a leaf
 function getLeafHash(encodedPath, leafValue) {
   const hasher = sha3_256.create();
   return hasher
@@ -342,7 +342,7 @@ function getLeafHash(encodedPath, leafValue) {
     .toUpperCase();
 }
 
-//枝のハッシュ値取得関数
+//Function for obtaining the hash value of a branch
 function getBranchHash(encodedPath, links) {
   const branchLinks = Array(16).fill(
     sym.Convert.uint8ToHex(new Uint8Array(32))
@@ -358,13 +358,13 @@ function getBranchHash(encodedPath, links) {
   return bHash;
 }
 
-//ワールドステートの検証
+//World State Verification
 function checkState(stateProof, stateHash, pathHash, rootHash) {
   const merkleLeaf = stateProof.merkleTree.leaf;
   const merkleBranches = stateProof.merkleTree.branches.reverse();
   const leafHash = getLeafHash(merkleLeaf.encodedPath, stateHash);
 
-  let linkHash = leafHash; //最初のlinkHashはleafHash
+  let linkHash = leafHash; //The first linkHash is a leafHash.
   let bit = "";
   for (let i = 0; i < merkleBranches.length; i++) {
     const branch = merkleBranches[i];
@@ -376,7 +376,7 @@ function checkState(stateProof, stateHash, pathHash, rootHash) {
       bit;
   }
 
-  const treeRootHash = linkHash; //最後のlinkHashはrootHash
+  const treeRootHash = linkHash; //The last linkHash is the rootHash
   let treePathHash = bit + merkleLeaf.path;
 
   if (treePathHash.length % 2 == 1) {
@@ -389,11 +389,10 @@ function checkState(stateProof, stateHash, pathHash, rootHash) {
 }
 ```
 
-### 13.3.1 アカウント情報の検証
+### 13.3.1 Account information validation
 
-アカウント情報を葉として、
-マークルツリー上の分岐する枝をアドレスでたどり、
-ルートに到着できるかを確認します。
+Account information as a leaf.
+Trace the branching branches on the merkle tree by address and confirm whether the route can be reached.
 
 ```js
 stateProofService = new sym.StateProofService(repo);
@@ -412,22 +411,21 @@ hasher = sha3_256.create();
 aliceInfo = await accountRepo.getAccountInfo(aliceAddress).toPromise();
 aliceStateHash = hasher.update(aliceInfo.serialize()).hex().toUpperCase();
 
-//サービス提供者以外のノードから最新のブロックヘッダー情報を取得
+//Obtaining up-to-date block header information from non-service provider nodes
 blockInfo = await blockRepo.search({ order: "desc" }).toPromise();
 rootHash = blockInfo.data[0].stateHashSubCacheMerkleRoots[0];
 
-//サービス提供者を含む任意のノードからマークル情報を取得
+//Obtaining markle information from any node, including service providers
 stateProof = await stateProofService.accountById(aliceAddress).toPromise();
 
-//検証
+//Verification
 checkState(stateProof, aliceStateHash, alicePathHash, rootHash);
 ```
 
-### 13.3.2 モザイクへ登録したメタデータの検証
+### 13.3.2 Verification of metadata registered to the mosaic
 
-モザイクに登録したメタデータ Value 値を葉として、
-マークルツリー上の分岐する枝をメタデータキーで構成されるハッシュ値でたどり、
-ルートに到着できるかを確認します。
+Metadata Value values registered in the mosaic as a leaf.
+Trace the branching branches on the merkle tree by the hash value consisting of the metadata key, and confirm whether the root can be reached.
 
 ```js
 srcAddress = Buffer.from(
@@ -472,22 +470,21 @@ hasher.update(cat.GeneratorUtils.uintToBuffer(value.length, 2));
 hasher.update(value);
 stateHash = hasher.hex();
 
-//サービス提供者以外のノードから最新のブロックヘッダー情報を取得
+//Obtaining up-to-date block header information from non-service provider nodes
 blockInfo = await blockRepo.search({ order: "desc" }).toPromise();
 rootHash = blockInfo.data[0].stateHashSubCacheMerkleRoots[8];
 
-//サービス提供者を含む任意のノードからマークル情報を取得
+//Obtaining markle information from any node, including service providers
 stateProof = await stateProofService.metadataById(compositeHash).toPromise();
 
-//検証
+//Verification
 checkState(stateProof, stateHash, pathHash, rootHash);
 ```
 
-### 13.3.3 アカウントへ登録したメタデータの検証
+### 13.3.3 Verification of metadata registered to an account
 
-アカウントに登録したメタデータ Value 値を葉として、
-マークルツリー上の分岐する枝をメタデータキーで構成されるハッシュ値でたどり、
-ルートに到着できるかを確認します。
+Metadata Value value registered in the account as a leaf.
+Trace the branching branches on the merkle tree by the hash value consisting of the metadata key, and confirm whether the root can be reached.
 
 ```js
 srcAddress = Buffer.from(
@@ -504,7 +501,7 @@ targetAddress = Buffer.from(
   "hex"
 );
 
-//compositePathHash(Key値)
+//compositePathHash(Key value)
 hasher = sha3_256.create();
 hasher.update(srcAddress);
 hasher.update(targetAddress);
@@ -518,7 +515,7 @@ hasher.update(Buffer.from(compositeHash, "hex"));
 
 pathHash = hasher.hex().toUpperCase();
 
-//stateHash(Value値)
+//stateHash(Value)
 hasher = sha3_256.create();
 hasher.update(cat.GeneratorUtils.uintToBuffer(1, 2)); //version
 hasher.update(srcAddress);
@@ -531,26 +528,25 @@ hasher.update(cat.GeneratorUtils.uintToBuffer(value.length, 2));
 hasher.update(value);
 stateHash = hasher.hex();
 
-//サービス提供者以外のノードから最新のブロックヘッダー情報を取得
+//Obtaining up-to-date block header information from non-service provider nodes
 blockInfo = await blockRepo.search({ order: "desc" }).toPromise();
 rootHash = blockInfo.data[0].stateHashSubCacheMerkleRoots[8];
 
-//サービス提供者を含む任意のノードからマークル情報を取得
+//Obtaining markle information from any node, including service providers
 stateProof = await stateProofService.metadataById(compositeHash).toPromise();
 
-//検証
+//Verification
 checkState(stateProof, stateHash, pathHash, rootHash);
 ```
 
-## 13.4 現場で使えるヒント
+## 13.4 Tips for use
 
-### トラステッドウェブ
+### Trusted web
 
-トラステッドウェブを簡単に説明すると、全てをプラットフォーマーに依存せず、かつ全てを検証せずに済む Web の実現です。
+The simple explanation of the Trusted Web is the realisation of a Web where everything is platform-independent and everything does not need to be verified.
 
-本章の検証で分かることは、ブロックチェーンが持つすべての情報はブロックヘッダーのハッシュ値によって検証可能ということです。
-ブロックチェーンはみんなが認め合うブロックヘッダーの共有とそれを再現できるフルノードの存在で成り立っています。
-しかし、ブロックチェーンを活用したいあらゆるシーンでこれらを検証するための環境を維持しておくことは非常に困難です。
-最新のブロックヘッダーが複数の信頼できる機関から常時ブロードキャストされていれば、検証の手間を大きく省くことができます
-このようなインフラが整えば、都会などの数千万人が密集する超過密地帯、あるいは基地局が十分に配置できない僻地や災害時の広域ネットワーク遮断時など
-ブロックチェーンの能力を超えた場所においても信頼できる情報にアクセスできるようになります。
+What the verification in this chapter shows is that all information held by the blockchain can be verified by the hash value of the block header.
+Blockchains are based on the sharing of block headers that everyone acknowledges and the existence of full nodes that can reproduce them.
+However, it is very difficult to maintain an environment to verify these in every situation where you want to utilise the blockchain.
+
+If the latest block headers are constantly broadcast from multiple trusted institutions, this can greatly reduce the need for verification such an infrastructure would allow access to trusted information even in places beyond the capabilities of the blockchain, such as urban areas where tens of millions of people are densely populated, or in remote areas where base stations cannot be adequately deployed, or during wide-area network outages during disasters.

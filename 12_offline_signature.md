@@ -1,16 +1,15 @@
-# 12.オフライン署名
+# 12.Offline Signatures
 
-ロック機構の章で、アナウンスしたトランザクションをハッシュ値指定でロックして、  
-複数の署名（オンライン署名）を集めるアグリゲートトランザクションを紹介しました。  
-この章では、トランザクションを事前に署名を集めてノードにアナウンスするオフライン署名について説明します。
+The chapter on Lock, explained the Lock transactions with a hash value specification and the Aggregate transaction, which collects multiple signatures (online signatures).  
+This chapter explains offline signing, which involves collecting signatures in advance and announcing the transaction to the node.
 
-## 手順
+## Procedure
 
-Alice が起案者となりトランザクションを作成し、署名します。  
-次に Bob が署名して Alice に返します。  
-最後に Alice がトランザクションを結合してネットワークにアナウンスします。
+Alice originates, creates and signs the transaction.  
+Then Bob signs it and returns it to Alice.  
+Finally, Alice combines the transactions and announces them to the network.
 
-## 12.1 トランザクション作成
+## 12.1 Transaction creation
 
 ```js
 bob = sym.Account.generateNewAccount(networkType);
@@ -48,25 +47,25 @@ signedPayload = signedTx.payload;
 console.log(signedPayload);
 ```
 
-###### 出力例
+###### Sample outlet
 
 ```js
 >580100000000000039A6555133357524A8F4A832E1E596BDBA39297BC94CD1D0728572EE14F66AA71ACF5088DB6F0D1031FF65F2BBA7DA9EE3A8ECF242C2A0FE41B6A00A2EF4B9020E5C72B0D5946C1EFEE7E5317C5985F106B739BB0BC07E4F9A288417B3CD6D26000000000198414100AF000000000000D4641CD902000000306771D758886F1529F9B61664B0450ED138B27CC5E3AE579C16D550EDEE5791B00000000000000054000000000000000E5C72B0D5946C1EFEE7E5317C5985F106B739BB0BC07E4F9A288417B3CD6D26000000000198544198A1BE13194C0D18897DD88FE3BC4860B8EEF79C6BC8C8720400000000000000007478310000000054000000000000003C4ADF83264FF73B4EC1DD05B490723A8CFFAE1ABBD4D4190AC4CAC1E6505A5900000000019854419850BF0FD1A45FCEE211B57D0FE2B6421EB81979814F629204000000000000000074783200000000
 ```
 
-署名を行い、signedHash,signedPayload を出力します。  
-signedPayload を Bob に渡して署名を促します。
+Sign and output signedHash,signedPayload.  
+Pass signedPayload to Bob to prompt him to sign.
 
-## 12.2 Bob による連署
+## 12.2 Cosignature by Bob
 
-Alice から受け取った signedPayload でトランザクションを復元します。
+Restore the transaction with the signedPayload received from Alice.
 
 ```js
 tx = sym.TransactionMapping.createFromPayload(signedPayload);
 console.log(tx);
 ```
 
-###### 出力例
+###### Sample outlet
 
 ```js
 > AggregateTransaction
@@ -87,7 +86,7 @@ console.log(tx);
     version: 1
 ```
 
-念のため、Alice がすでに署名したトランザクション（ペイロード）かどうかを検証します。
+To make sure, verify whether the transaction (payload) has already been signed by Alice.
 
 ```js
 Buffer = require("/node_modules/buffer").Buffer;
@@ -101,14 +100,14 @@ res = tx.signer.verifySignature(
 console.log(res);
 ```
 
-###### 出力例
+###### Sample outlet
 
 ```js
 > true
 ```
 
-ペイロードが signer、つまり Alice によって署名されたものであることが確認できました。
-次に Bob が連署します。
+It has been verified that the payload is signed by the signer, i.e. Alice.
+Then Bob cosigns.
 
 ```js
 bobSignedTx = sym.CosignatureTransaction.signTransactionPayload(
@@ -120,13 +119,13 @@ bobSignedTxSignature = bobSignedTx.signature;
 bobSignedTxSignerPublicKey = bobSignedTx.signerPublicKey;
 ```
 
-CosignatureTransaction で署名を行い、bobSignedTxSignature,bobSignedTxSignerPublicKey を出力し Alice に返却します。  
-Bob が全ての署名を揃えられる場合は、Alice に返却しなくても Bob がアナウンスすることも可能です。
+Bob signs with the signatureCosignatureTransaction  and outputs bobSignedTxSignature,bobSignedTxSignerPublicKey then returns it to Alice.  
+If Bob can align all the signatures, Bob can also make the announcement without having to return it to Alice.
 
-## 12.3 Alice によるアナウンス
+## 12.3 Announcement by Alice
 
-Alice は Bob から bobSignedTxSignature,bobSignedTxSignerPublicKey を受け取ります。  
-また事前に Alice 自身で作成した signedPayload を用意します。
+Alice receives bobSignedTxSignature,bobSignedTxSignerPublicKey from Bob.  
+Also, prepare a signedPayload created by Alice herself in advance.
 
 ```js
 signedHash = sym.Transaction.createTransactionHash(
@@ -171,8 +170,8 @@ signedTx = new sym.SignedTransaction(
 await txRepo.announce(signedTx).toPromise();
 ```
 
-後半部分の連署を追加する部分が Payload(サイズ値)を直接操作しているので少し難しいかもしれません。
-Alice の秘密鍵で再度署名できる場合は cosignSignedTxs を生成した後、以下のように連署済みトランザクションを生成することも可能です。
+The latter part of adding a series of signatures would be a little difficult as it directly manipulates the Payload (size value).
+If the private key of Alice can be used to sign the transaction again, it is possible to generate cosignSignedTxs and then generate a cosigned transaction as follows.
 
 ```js
 resignedTx = recreatedTx.signTransactionGivenSignatures(
@@ -183,15 +182,15 @@ resignedTx = recreatedTx.signTransactionGivenSignatures(
 await txRepo.announce(resignedTx).toPromise();
 ```
 
-## 12.4 現場で使えるヒント
+## 12.4 Tips for use
 
-### マーケットプレイスレス
+### Market place
 
-ボンデッドトランザクションと異なりハッシュロックのための手数料(10XYM)を気にする必要がありません。  
-ペイロードを共有できる場が存在する場合、売り手は考えられるすべての買い手候補に対してペイロードを作成して交渉開始を待つことができます。
-（複数のトランザクションが個別に実行されないように、1 つしか存在しない領収書 NFT をアグリゲートトランザクションに混ぜ込むなどして排他制御をしてください）。
-この交渉に専用のマーケットプレイスを構築する必要はありません。
-SNS のタイムラインをマーケットプレイスにしたり、必要に応じて任意の時間や空間でワンタイムマーケットプレイスを展開することができます。
+Unlike Bonded Transactions, there is no need to pay fees (10XYM) for hashlocks.  
+If the payload can be shared, the seller can create payloads for all possible potential buyers and wait for negotiations to start.
+(Exclusion control should be used, e.g. by mixing only one existing receipt NFT into the Aggregate Transaction, so that multiple transactions are not executed separately).
+There is no need to build a dedicated marketplace for these negotiations.
+Users can use a social networking timeline as a marketplace, or develop a one-time marketplace at any time or space as required.
 
-ただ、オフラインで署名を交換するため、なりすましのハッシュ署名要求には気を付けましょう。  
-（必ず検証可能なペイロードからハッシュを生成して署名するようにしてください）
+Just be careful of spoofed hash signature requests, as signatures are exchanged offline.  
+(Always generate and sign a hash from a verifiable payload).
