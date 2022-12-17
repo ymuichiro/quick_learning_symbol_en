@@ -1,14 +1,14 @@
-# 11.制限
+# 11.Restrictions
 
-アカウントに対する制限とモザイクのグローバル制限についての方法を紹介します。
-本章では、既存アカウントの権限を制限してしまうので、使い捨てのアカウントを新規に作成してお試しください。
+This section describes restrictions on accounts and global restrictions on mosaics.
+In this chapter, try restricting the permissions of existing accounts, so please create a new disposable account to try it out.
 
 ```js
-//使い捨てアカウントCarolの生成
+//Generating disposable accounts Carol
 carol = sym.Account.generateNewAccount(networkType);
 console.log(carol.address);
 
-//FAUCET URL出力
+//Outlet FAUCET URL
 console.log(
   "https://testnet.symbol.tools/?recipient=" +
     carol.address.plain() +
@@ -16,9 +16,9 @@ console.log(
 );
 ```
 
-## 11.1 アカウント制限
+## 11.1 Account Restrictions
 
-### 指定アドレスからの受信制限・指定アドレスへの送信制限
+### Specify addresses to restrict incoming and outgoing transactions
 
 ```js
 bob = sym.Account.generateNewAccount(networkType);
@@ -26,97 +26,98 @@ bob = sym.Account.generateNewAccount(networkType);
 tx =
   sym.AccountRestrictionTransaction.createAddressRestrictionModificationTransaction(
     sym.Deadline.create(epochAdjustment),
-    sym.AddressRestrictionFlag.BlockIncomingAddress, //アドレス制限フラグ
-    [bob.address], //設定アドレス
-    [], //解除アドレス
+    sym.AddressRestrictionFlag.BlockIncomingAddress, //Address restriction flag
+    [bob.address], //Setup address
+    [], //Cancellation address
     networkType
   ).setMaxFee(100);
 signedTx = carol.sign(tx, generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-AddressRestrictionFlag については以下の通りです。
+For AddressRestrictionFlag is as follows.
 
 ```js
 {1: 'AllowIncomingAddress', 16385: 'AllowOutgoingAddress', 32769: 'BlockIncomingAddress', 49153: 'BlockOutgoingAddress'}
 ```
 
-AddressRestrictionFlag には AllowIncomingAddress のほか、上記のようなフラグが使用できます。
+In addition to AllowIncomingAddress, the following flags can be used for AddressRestrictionFlag.
 
-- AllowIncomingAddress：指定アドレスからのみ受信許可
-- AllowOutgoingAddress：指定アドレス宛のみ送信許可
-- BlockIncomingAddress：指定アドレスからの受信受拒否
-- BlockOutgoingAddress：指定アドレス宛への送信禁止
+- AllowIncomingAddress：Allowing to receive only from specific addresses
+- AllowOutgoingAddress：Permitting to send only to specific addresses
+- BlockIncomingAddress：Rejection of incomings from designated addresses
+- BlockOutgoingAddress：Prohibition of outgoing to specific addresses
 
-### 指定モザイクの受信制限
+### Restrictions on receiving designated mosaics
 
 ```js
-mosaicId = new sym.MosaicId("72C0212E67A08BCE"); //テストネット XYM
+mosaicId = new sym.MosaicId("72C0212E67A08BCE"); //Testnet XYM
 tx =
   sym.AccountRestrictionTransaction.createMosaicRestrictionModificationTransaction(
     sym.Deadline.create(epochAdjustment),
-    sym.MosaicRestrictionFlag.BlockMosaic, //モザイク制限フラグ
-    [mosaicId], //設定モザイク
-    [], //解除モザイク
+    sym.MosaicRestrictionFlag.BlockMosaic, //Mosaic restriction flag
+    [mosaicId], //Setup mosaic
+    [], //Cancellation mosaic
     networkType
   ).setMaxFee(100);
 signedTx = carol.sign(tx, generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-MosaicRestrictionFlag については以下の通りです。
+MosaicRestrictionFlag is as follows.
 
 ```js
 {2: 'AllowMosaic', 32770: 'BlockMosaic'}
 ```
 
-- AllowMosaic：指定モザイクを含むトランザクションのみ受信許可
-- BlockMosaic：指定モザイクを含むトランザクションを受信拒否
+- AllowMosaic：Allowing to receive only transactions containing the specified mosaic
+- BlockMosaic：Rejection of incomings of transactions containing specified mosaics
 
-モザイク送信の制限機能はありません。
-また、後述するモザイクのふるまいを制限するグローバルモザイク制限と混同しないようにご注意ください。
+There is no restriction function for mosaic outgoing transactions.
+Please note that not to be confused with the global mosaic restriction, which restricts the behaviour of mosaics, described below.
 
-### 指定トランザクションの送信制限
+### Restrictions on specified transactions
 
 ```js
 tx =
   sym.AccountRestrictionTransaction.createOperationRestrictionModificationTransaction(
     sym.Deadline.create(epochAdjustment),
     sym.OperationRestrictionFlag.AllowOutgoingTransactionType,
-    [sym.TransactionType.ACCOUNT_OPERATION_RESTRICTION], //設定トランザクション
-    [], //解除トランザクション
+    [sym.TransactionType.ACCOUNT_OPERATION_RESTRICTION], //Setup transaction
+    [], //Cancellation transaction
     networkType
   ).setMaxFee(100);
 signedTx = carol.sign(tx, generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-OperationRestrictionFlag については以下の通りです。
+OperationRestrictionFlag is as follows.
 
 ```js
 {16388: 'AllowOutgoingTransactionType', 49156: 'BlockOutgoingTransactionType'}
 ```
 
-- AllowOutgoingTransactionType：指定トランザクションの送信のみ許可
-- BlockOutgoingTransactionType：指定トランザクションの送信を禁止
+- AllowOutgoingTransactionType：Permitting only for specified transactions
+- BlockOutgoingTransactionType：Prohibition of specified transactions
 
-トランザクション受信の制限機能はありません。指定できるオペレーションは以下の通りです。
+There is no restriction function for transaction reception. The operations that can be specified are as follows.
 
-TransactionType については以下の通りです。
+TransactionType is as follows.
 
 ```js
 {16705: 'AGGREGATE_COMPLETE', 16707: 'VOTING_KEY_LINK', 16708: 'ACCOUNT_METADATA', 16712: 'HASH_LOCK', 16716: 'ACCOUNT_KEY_LINK', 16717: 'MOSAIC_DEFINITION', 16718: 'NAMESPACE_REGISTRATION', 16720: 'ACCOUNT_ADDRESS_RESTRICTION', 16721: 'MOSAIC_GLOBAL_RESTRICTION', 16722: 'SECRET_LOCK', 16724: 'TRANSFER', 16725: 'MULTISIG_ACCOUNT_MODIFICATION', 16961: 'AGGREGATE_BONDED', 16963: 'VRF_KEY_LINK', 16964: 'MOSAIC_METADATA', 16972: 'NODE_KEY_LINK', 16973: 'MOSAIC_SUPPLY_CHANGE', 16974: 'ADDRESS_ALIAS', 16976: 'ACCOUNT_MOSAIC_RESTRICTION', 16977: 'MOSAIC_ADDRESS_RESTRICTION', 16978: 'SECRET_PROOF', 17220: 'NAMESPACE_METADATA', 17229: 'MOSAIC_SUPPLY_REVOCATION', 17230: 'MOSAIC_ALIAS'}
 ```
 
-##### 注意事項
+##### Note
 
-17232: 'ACCOUNT_OPERATION_RESTRICTION' の制限は許可されていません。
-つまり、AllowOutgoingTransactionType を指定する場合は、ACCOUNT_OPERATION_RESTRICTION を必ず含める必要があり、
-BlockOutgoingTransactionType を指定する場合は、ACCOUNT_OPERATION_RESTRICTION を含めることはできません。
+17232: `ACCOUNT_OPERATION_RESTRICTION` restriction is not permitted.
+This means that if AllowOutgoingTransactionType is specified, ACCOUNT_OPERATION_RESTRICTION must be included, and
+If BlockOutgoingTransactionType is specified, ACCOUNT_OPERATION_RESTRICTION cannot be included.
 
-### 確認
 
-設定した制限情報を確認します
+### Confirmation
+
+Check the information on the restrictions you have set
 
 ```js
 resAccountRepo = repo.createRestrictionAccountRepository();
@@ -125,7 +126,7 @@ res = await resAccountRepo.getAccountRestrictions(carol.address).toPromise();
 console.log(res);
 ```
 
-###### 出力例
+###### Sample outlet
 
 ```js
 > AccountRestrictions
@@ -142,13 +143,13 @@ console.log(res);
           0: Address {address: 'TCW2ZW7LVJMS4LWUQ7W6NROASRE2G2QKSBVCIQY', networkType: 152}
 ```
 
-## 11.2 グローバルモザイク制限
+## 11.2 Mosaic Global Restriction
 
-グローバルモザイク制限はモザイクに対して送信可能な条件を設定します。  
-その後、各アカウントに対してグローバルモザイク制限専用の数値メタデータを付与します。  
-送信アカウント・受信アカウントの両方が条件を満たした場合のみ、該当モザイクを送信することができます。
+Mosaic Global Restriction sets the conditions under which mosaics can be transferred.  
+Assigning to each account for Numeric metadata dedicated to the mosaic global restriction.  
+The relevant mosaic can only be sent if both the incoming and outgoing accounts meet the conditions.
 
-最初に必要ライブラリの設定を行います。
+Firstly, setting up the necessary libraries.
 
 ```js
 nsRepo = repo.createNamespaceRepository();
@@ -159,15 +160,15 @@ mosaicResService = new sym.MosaicRestrictionTransactionService(
 );
 ```
 
-### グローバル制限機能つきモザイクの作成
+### Creating mosaics with global restrictions
 
-restrictable を true にして Carol でモザイクを作成します。
+Set restrictable to true to create a mosaic in Carol.
 
 ```js
-supplyMutable = true; //供給量変更の可否
-transferable = true; //第三者への譲渡可否
-restrictable = true; //グローバル制限設定の可否
-revokable = true; //発行者からの還収可否
+supplyMutable = true; //Availability of changes in supply
+transferable = true; //Transferability to third parties
+restrictable = true; //Availability of global restriction settings
+revokable = true; //Revokability from the issuer
 
 nonce = sym.MosaicNonce.createRandom();
 mosaicDefTx = sym.MosaicDefinitionTransaction.create(
@@ -180,7 +181,7 @@ mosaicDefTx = sym.MosaicDefinitionTransaction.create(
   networkType
 );
 
-//モザイク変更
+//Mosaic change
 mosaicChangeTx = sym.MosaicSupplyChangeTransaction.create(
   undefined,
   mosaicDefTx.mosaicId,
@@ -189,7 +190,7 @@ mosaicChangeTx = sym.MosaicSupplyChangeTransaction.create(
   networkType
 );
 
-//グローバルモザイク制限
+//Mosaic Global Restriction
 key = sym.KeyGenerator.generateUInt64Key("KYC"); // restrictionKey
 mosaicGlobalResTx = await mosaicResService
   .createMosaicGlobalRestrictionTransaction(
@@ -217,13 +218,13 @@ signedTx = carol.sign(aggregateTx, generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-MosaicRestrictionType については以下の通りです。
+MosaicRestrictionType is as follows.
 
 ```js
 {0: 'NONE', 1: 'EQ', 2: 'NE', 3: 'LT', 4: 'LE', 5: 'GT', 6: 'GE'}
 ```
 
-| 演算子 | 略称 | 英語                     |
+| Operator | Abbreviation | English                     |
 | ------ | ---- | ------------------------ |
 | =      | EQ   | equal to                 |
 | !=     | NE   | not equal to             |
@@ -232,15 +233,15 @@ MosaicRestrictionType については以下の通りです。
 | >      | GT   | greater than             |
 | <=     | GE   | greater than or equal to |
 
-### アカウントへのモザイク制限適用
+### Applying mosaic restrictions to accounts
 
-Carol,Bob に対してグローバル制限モザイクに対しての適格情報を追加します。  
-送信・受信についてかかる制限なので、すでに所有しているモザイクについての制限はありません。  
-送信を成功させるためには、送信者・受信者双方が条件をクリアしている必要があります。  
-モザイク作成者の秘密鍵があればどのアカウントに対しても承諾の署名を必要とせずに制限をつけることができます。
+Add eligibility information against the Mosaic Global Restriction to Carol and Bob.  
+There are no restrictions on mosaics already owned, as these restrictions apply to incoming and outgoing.  
+For a successful transfer, both sender and receiver must fulfil the conditions.  
+Restrictions can be placed on any account with the private key of the mosaic creator without requiring a signature of consent.
 
 ```js
-//Carolに適用
+//Apply to Carol
 carolMosaicAddressResTx = sym.MosaicAddressRestrictionTransaction.create(
   sym.Deadline.create(epochAdjustment),
   mosaicDefTx.mosaicId, // mosaicId
@@ -253,7 +254,7 @@ carolMosaicAddressResTx = sym.MosaicAddressRestrictionTransaction.create(
 signedTx = carol.sign(carolMosaicAddressResTx, generationHash);
 await txRepo.announce(signedTx).toPromise();
 
-//Bobに適用
+//Apply to Bob
 bob = sym.Account.generateNewAccount(networkType);
 bobMosaicAddressResTx = sym.MosaicAddressRestrictionTransaction.create(
   sym.Deadline.create(epochAdjustment),
@@ -268,9 +269,9 @@ signedTx = carol.sign(bobMosaicAddressResTx, generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-### 制限状態確認
+### Confirmation of restriction status check
 
-ノードに問い合わせて制限状態を確認します。
+Query the node to check its restriction status.
 
 ```js
 res = await resMosaicRepo
@@ -279,7 +280,7 @@ res = await resMosaicRepo
 console.log(res);
 ```
 
-###### 出力例
+###### Sample outlet
 
 ```js
 > data
@@ -307,12 +308,12 @@ console.log(res);
   ...
 ```
 
-### 送信確認
+### Confirmation of transferring
 
-実際にモザイクを送信してみて、制限状態を確認します。
+Check the restriction status by transferring the mosaic.
 
 ```js
-//成功（CarolからBobに送信）
+//Success (Carol to Bob)
 trTx = sym.TransferTransaction.create(
   sym.Deadline.create(epochAdjustment),
   bob.address,
@@ -323,7 +324,7 @@ trTx = sym.TransferTransaction.create(
 signedTx = carol.sign(trTx, generationHash);
 await txRepo.announce(signedTx).toPromise();
 
-//失敗（CarolからDaveに送信）
+//Failed (Carol to Dave)
 dave = sym.Account.generateNewAccount(networkType);
 trTx = sym.TransferTransaction.create(
   sym.Deadline.create(epochAdjustment),
@@ -336,30 +337,26 @@ signedTx = carol.sign(trTx, generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-失敗した場合以下のようなエラーステータスになります。
+Failure will result in the following error status.
 
 ```js
 {"hash":"E3402FB7AE21A6A64838DDD0722420EC67E61206C148A73B0DFD7F8C098062FA","code":"Failure_RestrictionMosaic_Account_Unauthorized","deadline":"12371602742","group":"failed"}
 ```
 
-## 11.3 現場で使えるヒント
+## 11.3 Tips for use
 
-ブロックチェーンの社会実装などを考えたときに、法律や信頼性の見地から
-一つの役割のみを持たせたいアカウント、関係ないアカウントを巻き込みたくないと思うことがあります。
-そんな場合にアカウント制限とグローバルモザイク制限を使いこなすことで、
-モザイクのふるまいを柔軟にコントロールすることができます。
+When considering social implementation of blockchain, for example, it is possible to envisage an operation that does not involve accounts that aim to only have one role from a legal or trust perspective, or accounts that are not related to each other.
+By effectively applying account restrictions and mosaic global restrictions to the mode of operation in such cases users can flexibly control the behaviour of the mosaic.。
 
-### アカウントバーン
+### Account burn
 
-AllowIncomingAddress によって指定アドレスからのみ受信可能にしておいて、  
-XYM を全量送信すると、秘密鍵を持っていても自力では操作困難なアカウントを明示的に作成することができます。  
-（最小手数料を 0 に設定したノードによって承認されることもあり、その可能性はゼロではありません）
+AllowIncomingAddress to receive only from the specified address, and then Sending the entire XYM can explicitly create an account that is difficult to operate on its own, even if it has a private key.  
+(It can also be authorised by a node with a minimum fee set to 0, which has a non-zero chance of being authorised).
 
-### モザイクロック
+### Mosaic lock
 
-譲渡不可設定のモザイクを配布し、配布者側のアカウントで受け取り拒否を行うとモザイクをロックさせることができます。
+You can distribute a mosaic with non-transferable settings and lock the mosaic if the distributor's account refuses to receive the mosaic.
 
-### 所属証明
+### Proof of membership
 
-モザイクの章で所有の証明について説明しました。グローバルモザイク制限を活用することで、
-KYC が済んだアカウント間でのみ所有・流通させることが可能なモザイクを作り、所有者のみが所属できる独自経済圏を構築することが可能です。
+Proof of ownership was explained in the chapter on mosaics. By utilising the mosaic global  restriction, it is possible to create a mosaic that can only be owned and circulated between accounts that have done KYC, creating a unique economic zone to which only the owner can belong.
