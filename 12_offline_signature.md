@@ -184,7 +184,7 @@ await txRepo.announce(resignedTx).toPromise();
 
 ## 12.4 Tips for use
 
-### Market place
+### Beyond the market place
 
 Unlike Bonded Transactions, there is no need to pay fees (10XYM) for hashlocks.  
 If the payload can be shared, the seller can create payloads for all possible potential buyers and wait for negotiations to start.
