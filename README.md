@@ -1,4 +1,4 @@
-### Start the Symbol blockchain practically from today
+### Let's get started with a practical Symbol blockchain learning programme from today
 
 # Quick learning Symbol
 
