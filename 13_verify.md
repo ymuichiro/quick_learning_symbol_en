@@ -1,9 +1,9 @@
 # 13.Validation
 
-Verify the various types of information recorded on the blockchain.
-While data recording on the blockchain is done with the agreement of all nodes.
-However, **referencing data** to the blockchain is done by obtaining information from the node alone, so If a new transaction is to be made based on information from an untrusted node, the data obtained from the node must be verified.
-
+Verify information recorded on the blockchain.
+While recording data on the blockchain is done with the agreement of all nodes, 
+ **referencing data** on the blockchain is achieved by obtaining information from a single 
+node. For this reason, if a new transaction is to be made based on information from an untrusted node, the data obtained from the node must be verified.
 
 ## 13.1 Transaction validation
 
@@ -71,9 +71,9 @@ console.log(tx);
       type: 16705
 ```
 
-### Signatories validation
+### Signatory validation
 
-It can be confirmed if the transaction is included in the block, but just to make sure, verify the signature of the transaction with the account's public key.
+The transaction can be verified by confirming that it has been included in the block, but just to make sure, it is possible to verify the signature of the transaction with the account's public key.
 
 ```js
 res = alice.publicAccount.verifySignature(
@@ -93,11 +93,11 @@ console.log(res);
 Only the part to be signed is extracted in getSigningBytes.  
 Note that the part to be extracted is different for normal transactions and Aggregate Transactions.
 
-### Calculation of the merkle component hash
+### Calculation of the Merkle component hash
 
-The hash value of the transaction does not contain information on the cosignatory.  
-On the other hand, the merkle root stored in the block header contains a hash of the transaction with the information of the cosignatory included.  
-Therefore, when verifying whether a transaction exists inside a block, the transaction hash must be converted to a merkle component hash.
+The hash value of the transaction does not contain information about the cosignatory.  
+On the other hand, the Merkle root stored in the block header contains a hash of the transaction with the information of the cosignatory included.  
+Therefore, when verifying whether a transaction exists inside a block, the transaction hash must be converted to a Merkle component hash.
 
 ```js
 merkleComponentHash = hash;
@@ -118,7 +118,7 @@ console.log(merkleComponentHash);
 
 ### InBlock validation
 
-Retrieve the markle tree from the node and check that the markle root of the block header can be derived from the merkleComponentHash calculated.
+Retrieve the Merkle tree from the node and check that the Merkle root of the block header can be derived from the merkleComponentHash calculated.
 
 ```js
 function validateTransactionInBlock(leaf, HRoot, merkleProof) {
@@ -157,9 +157,9 @@ console.log(result);
 
 It has been verified that the transaction information is contained in the block header.
 
-## 13.2 Block headers validation
+## 13.2 Block header validation
 
-Verify that the known block hash value (e.g. finalised block) can be traced back to the block header under verification.
+Verify that the known block hash value (e.g. finalised block) can be traced back to the block header that is being verified.
 
 ### Normal block validation
 
@@ -204,17 +204,14 @@ if (block.type === sym.BlockType.NormalBlock) {
 }
 ```
 
-If output was true, this block hash acknowledges the existence of the previous block hash value.
-In the same way, the "n"th block confirms the existence of the "n-1th" block and finally arrives at the block under verification.
+If the output was true, this block hash acknowledges the existence of the previous block hash value. In the same way, the "n"th block confirms the existence of the "n-1th" block and finally arrives at the block being verified.
 
-Now we have a known finalised block that can be verified by querying any node.
-supported by the existence of the block to be verified.
+Now we have a known finalised block that can be verified by querying any node to support the existence of the block to be verified.
 
 
 ### Importance block validation
 
-ImportanceBlock is the block (every 720 blocks, every 180 blocks for Testnet) where the importance value is recalculated.  
-In addition to the NormalBlock, the following information is added.
+ImportanceBlock is the block where the importance value is recalculated. Importance blocks occur every 720 blocks on Mainnet and every 180 blocks on Testnet. In addition to the NormalBlock, the following information is added.
 
 - votingEligibleAccountsCount
 - harvestingEligibleAccountsCount
@@ -279,7 +276,7 @@ if (block.type === sym.BlockType.ImportanceBlock) {
 }
 ```
 
-Verify stateHashSubCacheMerkleRoots for account and metadata verification, described below.
+Verifying stateHashSubCacheMerkleRoots for accounts and metadata is described below.
 
 ### Importance block stateHash validation
 
@@ -325,7 +322,7 @@ console.log(block.stateHash === hash);
 
 It can be seen that the nine states used to validate the block headers consist of stateHashSubCacheMerkleRoots.
 
-## 13.3 Account・meta data validation
+## 13.3 Account・metadata validation
 
 The Markle Patricia Tree is used to verify the existence of accounts and metadata associated with a transaction.  
 If the service provider provides a Markle Patricia tree, users can verify its authenticity using nodes of their own choosing.
@@ -392,7 +389,7 @@ function checkState(stateProof, stateHash, pathHash, rootHash) {
 ### 13.3.1 Account information validation
 
 Account information as a leaf.
-Trace the branching branches on the merkle tree by address and confirm whether the route can be reached.
+Trace the branches on the Merkle tree by address and confirm whether the route can be reached.
 
 ```js
 stateProofService = new sym.StateProofService(repo);
@@ -424,8 +421,7 @@ checkState(stateProof, aliceStateHash, alicePathHash, rootHash);
 
 ### 13.3.2 Verification of metadata registered to the mosaic
 
-Metadata Value values registered in the mosaic as a leaf.
-Trace the branching branches on the merkle tree by the hash value consisting of the metadata key, and confirm whether the root can be reached.
+Metadata values are registered in the mosaic as a leaf. Trace the branches on the Merkle tree by the hash value consisting of the metadata key, and confirm whether the root can be reached.
 
 ```js
 srcAddress = Buffer.from(
@@ -483,8 +479,7 @@ checkState(stateProof, stateHash, pathHash, rootHash);
 
 ### 13.3.3 Verification of metadata registered to an account
 
-Metadata Value value registered in the account as a leaf.
-Trace the branching branches on the merkle tree by the hash value consisting of the metadata key, and confirm whether the root can be reached.
+Metadata values are registered in the account as a leaf. Trace the branches on the Merkle tree by the hash value consisting of the metadata key, and confirm whether the root can be reached.
 
 ```js
 srcAddress = Buffer.from(
@@ -543,10 +538,11 @@ checkState(stateProof, stateHash, pathHash, rootHash);
 
 ### Trusted web
 
-The simple explanation of the Trusted Web is the realisation of a Web where everything is platform-independent and everything does not need to be verified.
+A simple explanation of the “Trusted Web” is the realisation of a Web where everything is platform-independent and nothing needs to be verified.
 
 What the verification in this chapter shows is that all information held by the blockchain can be verified by the hash value of the block header.
-Blockchains are based on the sharing of block headers that everyone acknowledges and the existence of full nodes that can reproduce them.
-However, it is very difficult to maintain an environment to verify these in every situation where you want to utilise the blockchain.
+Blockchains are based on the sharing of block headers that everyone agrees upon and the existence of full nodes that can reproduce them.
+However, it is challenging to maintain an environment to verify these in every situation where you want to utilise the blockchain.
 
-If the latest block headers are constantly broadcast from multiple trusted institutions, this can greatly reduce the need for verification such an infrastructure would allow access to trusted information even in places beyond the capabilities of the blockchain, such as urban areas where tens of millions of people are densely populated, or in remote areas where base stations cannot be adequately deployed, or during wide-area network outages during disasters.
+If the latest block headers are constantly broadcast from multiple trusted institutions, this can greatly reduce the need for verification. Such an infrastructure would allow access to trusted information even in places beyond the capabilities of the blockchain, such as urban areas where tens of millions of people are densely populated, or in remote areas where base stations cannot be adequately deployed, or during wide-area network outages during disasters.
+
