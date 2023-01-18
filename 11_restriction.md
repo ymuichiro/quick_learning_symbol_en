@@ -143,7 +143,7 @@ console.log(res);
           0: Address {address: 'TCW2ZW7LVJMS4LWUQ7W6NROASRE2G2QKSBVCIQY', networkType: 152}
 ```
 
-## 11.2 Mosaic Global Restriction
+## 11.2 Mosaic Global Restrictions
 
 Mosaic Global Restriction sets the conditions under which mosaics can be transferred.  
 Assigning to each account for Numeric metadata dedicated to the mosaic global restriction.  
@@ -346,7 +346,7 @@ Failure will result in the following error status.
 ## 11.3 Tips for use
 
 When considering social implementation of blockchain, for example, it is possible to envisage an operation that does not involve accounts that aim to only have one role from a legal or trust perspective, or accounts that are not related to each other.
-By effectively applying account restrictions and mosaic global restrictions to the mode of operation in such cases users can flexibly control the behaviour of the mosaic.。
+By effectively applying account restrictions and mosaic global restrictions to the mode of operation in such cases users can flexibly control the behaviour of the mosaic.
 
 ### Account burn
 
