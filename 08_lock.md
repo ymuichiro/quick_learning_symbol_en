@@ -162,7 +162,7 @@ The LockHashAlgorithm is as follows
 {0: 'Op_Sha3_256', 1: 'Op_Hash_160', 2: 'Op_Hash_256'}
 ```
 
-At the time of locking, the unlocking destination is specified, which means  only Bob can unlock it.
+At the time of locking, the unlocking destination is specified by Bob, thus the destination (Bob) cannot be changed even if an account other than Bob unlocks.
 The maximum lock period is 365 days (counting number of blocks in days).
 
 Confirm approved transactions.
