@@ -1,34 +1,33 @@
 # 1.Introduction
 
-## This document aims to
+## Abstract
 
-This manual is designed to help you quickly learn the skills required for utilisation of the Symbol blockchain. Unlike general official documents that deal with the technology comprehensively, this document is structured in a way that if you read it from the beginning, you can learn the whole picture of utilisation of the Symbol blockchain for developing applications in a systematic way without difficulty.  
-Incidentally, this document does not refer to the following matters, the node hosting method, consensus algorithm and incentive rewards.
+This manual is designed to help you quickly learn the skills required for utilisation of the Symbol blockchain. Unlike most official documents that provide exhaustive detail on theory and technology, this document is structured in such a way that if you read it from beginning to end
 
-## People subject to this document
+This manual was designed as a practical resource for people looking to learn and leverage the Symbol blockchain's core concepts and native functionality. Unlike most official documents that exhaustively deal with general technology, this document approaches the Symbol blockchain through its usable elements and built-in features, providing a practical overview by detailing key concepts alongside example code and outputs. If read from the beginning, it will provide a holistic understanding of the Symbol blockchain along with all the tools needed to begin application development. For the sake of brevity, this document omits several aspects of the Symbol blockchain and its network including: node management, the consensus algorithm, tokenomics, harvesting rewards, etc.
 
-- Those who would like to give blockchain a try, but don't know where to start learning.
-- Those who learn about blockchain but still do not come to mind what it can be used for.
-- Those who are trying to create educational material on Symbol blockchain but are wondering what steps to take to educate it.
-- Those who want to know the point how it easy about the Symbol briefly, although the Symbol is often described as an easy to use blockchain.
+## Target Audience
 
-## What does "practically" mean?
+- Newcomers to the Blockchain space who are looking to better understand the Symbol blockchain and experiment with it.
+- Blockchain enthusiasts looking for practical use cases with examples
+- Educators & content producers seeking to understand and describe the Symbol blockchain or specific aspects of it
+- Anyone curious about how easy it is to build on Symbol
 
-The minimum unit of data that configures a blockchain is not a currency, but a proof of existence with a time stamp. With the focus here, blockchain can further expand its uses, such as authentication, traceability and much more. If you look at the world around you, you will see that **trust is a prerequisite for the many necessary connections that our society is built upon**. As important as trust is to our society's functioning, this does not mean that we inherently trust other individuals. The connections built on trust can be difficult to express, as trust and its value are not easily measured. As a result, the value of these connections is most often represented through money/currency, a kind of common scale of value that underpins modern society. Blockchain has introduced the possibility of trustless peer-to-peer interactions, providing a novel opportunity to reframe our relationship with trust and value.
+## Taking a practical approach
 
-Today, blockchain technology makes it possible to record that trust in unfalsifiable forms without converting it into currencies. This document has been written to give people working **"practically "** on business and culture, not only in finance but also in many more fields, and tips on how to leverage the power of blockchain.
+A blockchain's most foundational element is a proof of existence with an associated time stamp, not money or 'cryptocurrency'. With this in focus we can imagine blockchain's applicability in areas such as authentication and traceability. Trust is a foundational element upon which society is built, yet we do not inherently trust systems and other individuals. In order to navigate this contradiction, countless solutions have been built around translating that trust into money. Blockchain has introduced the possibility of trustless peer-to-peer interactions, providing a novel opportunity to reframe our relationship with trust and value.
 
-## Meaning 'from today', not 'from tomorrow'
+Blockchain technology has made trustless peer-to-peer interactions possible, eliminating the need for money or a trusted third parties in many scenarios. **This document was written in such a way that people who are active in fields of business and culture, not just in finance, can get a sense of how to utilize the power of blockchain within their domain.**
 
-Recently, in the field of IoT and other developments, it is sometimes expressed that "No longer even a need for PoC". The IT components are becoming modulars. Modulations are bringing us the fact that even a trial device can be put into operation without any modification.
-The Symbol blockchain is also a platform which allows the configured accounts and tokens to be used as a highly secure intelligence infrastructure as it is, with an available suite of tools provided by the community, without the need to build own applications nor nodes .
+## Ready-to-use with real-world utility 
 
-I hope that this document will show you these possibilities. Please note that the 'Tips for use in the field' at the end of each chapter requires a cross-disciplinary knowledge of each function, so you can skip them at first.
+The idea that **"a Proof of Concept (PoC) is no longer needed"** is increasingly taking hold in areas of novel technology advancement such as the Internet of Things (IoT). Physical and digital modularity have progressed to the point where even prototypes can safely deployed in real-world applications as they are, largely bypassing the need for protracted refinement cycles and code review.
+The Symbol blockchain was largely designed around notions of security, scalability, and modularity. Symbol's native functionality for accounts and tokens provides a robust foundation of highly secure information infrastructure. This is furthered by a powerful network of API-enabled nodes and suite of community-developed tools which largely mitigate the need for custom-build applications and self-hosted nodes.
 
-## What the Symbol blockchain doesn't have.
+We hope the possibilities provided by the Symbol blockchain resonate throughout this document will show you these possibilities. Please note that the 'Tips for use in the field' at the end of each chapter requires a cross-sectional understanding of Symbol's functions, so you can skip these at first.
 
-For those who have developed in other chains, I leave a little explanation of it.
+## Where Symbol differs from other 'smart' blockchains.
 
-The Symbol blockchain doesn't have any contract accounts. Therefore, there is no idea of deploying smart contracts, and all smart contracts functioning in Symbol are executed only once and lose their effect, hence sometimes described as a deployless one-time smart contract.
+The Symbol blockchain does not use smart contracts. A suite of 'smart' infrastructure is baked into Symbol's code base, the complex interactions and transactions enabled by this infrastructure provide similar functionality to many common smart contracts deployed on other chains. Symbol's built-in 'smart contracts' can be used at any time but are executed only once with each use, hence they are sometimes described as a deployless one-time smart contract.
 
-Since, as a deployless chain, the smart contracts can be written in any familiar language without the need to use a dedicated language for that, and as they are executed only once, it doesn't consume large amounts of network resources due to improper loop control, and also free from vulnerabilities by marcious abusing reuse of logic in the contract.
+As a deployless chain, Symbol encourages off-chain applications and contracts that interact with Symbol's many functions. These applications can be written in any common programming language. As deployless one-time smart contracts as they are executed only once, they cannot incur inordinate fees nor network resources due to errors like an infinite loop. This also prevents end users or bad actors from deploying contracts with unintended vulnerabilities or outright malicious code.
