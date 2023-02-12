@@ -1,9 +1,9 @@
 # 7.Metadata
 
-Key-Value format data can be registerd for the account mosaic namespace. The maximum value is 1024 bytes.
-With the assumption that both mosaic namespace and account are created by Alice in this chapter.
+Key-Value format data can be registered for an account mosaic namespace. The maximum value of data that can be written is 1024 bytes.
+We make the assumption that both mosaic, namespace and account are created by Alice in this chapter.
 
-Before running the sample scripts in this chapter, please load the following libraries in advance.
+Before running the sample scripts in this chapter, please load the following libraries:
 ```js
 metaRepo = repo.createMetadataRepository();
 mosaicRepo = repo.createMosaicRepository();
@@ -38,7 +38,7 @@ await txRepo.announce(signedTx).toPromise();
 Registration of metadata requires a signature of the account to which it is recorded.
 Even if the registration destination account and the sender account are the same, an aggregate transaction is required.
 
-When registering the metadata to different accounts, use "signTransactionWithCosignatories" to sign it.
+When registering metadata to different accounts, use "signTransactionWithCosignatories" to sign it.
 
 ```js
 tx = await metaService.createAccountMetadataTransaction(
@@ -61,12 +61,12 @@ signedTx = aggregateTx.signTransactionWithCosignatories(
 await txRepo.announce(signedTx).toPromise();
 ```
 
-In case you don't know the bob's private key, Aggregate Bonded Transactions which is explained in the chapters that follow or offline signing must be used.
+In case you don't know Bob's private key, Aggregate Bonded Transactions which are explained in the chapters that follow or offline signing must be used.
 
-## 7.2 Register for mosaic
+## 7.2 Register to a mosaic
 
-Register a Value with the composite key of the Key value/source account for the target mosaic.
-The signature of the account that created the mosaic is required for registration and update.
+Register a value with the composite key of the key value/source account for the target mosaic.
+The signature of the account that created the mosaic is required for registering and updating metadata.
 
 ```js
 mosaicId = new sym.MosaicId("1275B0B7511D9161");
@@ -97,8 +97,7 @@ await txRepo.announce(signedTx).toPromise();
 ## 7.3 Register for namespace
 
 Register a Key-Value for the namespace.
-The signature of the account that created the mosaic is required for registration and update.
-
+The signature of the account that created the mosaic is required for registering and updating metadata.
 
 ```js
 nsRepo = repo.createNamespaceRepository();
@@ -127,7 +126,7 @@ await txRepo.announce(signedTx).toPromise();
 ```
 
 ## 7.4 Confirmation
-Confirm the registered metadata.
+Check the registered metadata.
 
 ```js
 res = await metaRepo.search({
@@ -136,7 +135,7 @@ res = await metaRepo.search({
 ).toPromise();
 console.log(res);
 ```
-###### Sample outlet
+###### Sample output
 ```js
 data: Array(3)
   0: Metadata
@@ -180,7 +179,7 @@ sym.MetadataType
 
 ### Note
 While metadata has the advantage of providing quick access to information by Key-Value, it should be noted that it needs updating.
-Updating requires the signatures of the issuer account and the account to which it is registered, so it is better only be used if both accounts can be trusted.
+Updating requires the signatures of the issuer account and the account to which it is registered, so it should only be used if both accounts can be trusted.
 
 
 ## 7.5 Tips for use
@@ -188,10 +187,10 @@ Updating requires the signatures of the issuer account and the account to which 
 ### Proof of eligibility
 
 We described proof of ownership in the Mosaic chapter and domain linking in the Namespace chapter.
-By receiving a metadata issued by an account linked from a reliable domain can be used for proofing of ownership of eligibility within that domain.
+By receiving metadata issued by an account linked from a reliable domain can be used for proofing of ownership of eligibility within that domain.
 
 #### DID (Decentralized identity)
 
 The ecosystem is divided into issuers, owners and verifiers, e.g. students own the diplomas issued by universities, and companies verify the certificates presented by the students based on the public keys published by the universities.
-There is no platform-dependent or third party-dependent information for this verification.
+There is no platform-dependent or third party-dependent information required for this verification.
 By utilising metadata in this way, universities can issue metadata to accounts owned by students, and companies can verify the proof of graduation listed in the metadata with the university's public key and the student's mosaic (account) proof of ownership.
