@@ -1,32 +1,31 @@
 # 4.Transaction
-Updating datas on the blockchain is done by announcing transactions to the network.
+Updating data on the blockchain is done by announcing transactions to the network.
 
 ## 4.1 Transaction lifecycle
 
-Describing the steps below from the creation of the transaction until the data becomes difficult to tamper with.
+Below is a description of the lifecycle of a transaction:
 
 - Transaction creation
-  - Create transactions in an acceptable format to the blockchain.
+  - Create transactions in an acceptable format for the blockchain.
 - Signature
-  - Sign with the transaction with the account's privatekey.
+  - Sign the transaction with the account's privatekey.
 - Announcement
-  - Announce a signed transaction to any node.
+  - Announce a signed transaction to any node on the network.
 - Unconfirmed state transactions
   - Transactions accepted by a node are propagated to all nodes as unconfirmed state transactions.
     - In a case where the maximum fee set for a transaction is not enough for the minimum fee set for each node, it will not be propagated to that node.
 - Confirmed transaction
-  - When an unconfirmed transaction is contained in a subsequent new block which is generated approximately every 30 seconds, it becomes an approved transaction.
+  - When an unconfirmed transaction is contained in a subsequent new block (generated approximately every 30 seconds), it becomes an approved transaction.
 - Rollbacks
-  - Transactions could not reach a consensus agreement between nodes are rollebacked to unconfirmed state.
+  - Transactions that could not reach a consensus agreement between nodes are rolled back to an unconfirmed state.
     - Transactions that have expired or overflowed the cache are truncated.
 - Finalise
-  - Once the block is finalised by the finalisation process by the voting node, the transaction can be treated as non-rollbackable data.
+  - Once the block is finalised by the finalisation process of the voting node, the transaction can be treated as final and data can no longer be rolled back.
 
 ### What is a block?
 
-Blocks are generated approximately every 30 seconds, with priority given to transactions that have paid higher fees, and are synchronised with other nodes on a block-by-block basis.
-If synchronisation fails, it is rollbacked and the network repeats this process until consensus agreement is reached across the board.
-
+Blocks are generated approximately every 30 seconds and are synchronised with other nodes on a block-by-block basis with priority given to transactions that have paid higher fees.
+If synchronisation fails, it is rolled back and the network repeats this process until consensus agreement is reached across all nodes.
 
 ## 4.2 Transaction creation
 
@@ -34,7 +33,7 @@ First of all, start with creating the most basic transfer transaction.
 
 ### Transfer transaction to Bob
 
-Create the Bob address to send.
+Create the Bob address to send to.
 ```js
 bob = sym.Account.generateNewAccount(networkType);
 console.log(bob.address);
@@ -57,7 +56,7 @@ tx = sym.TransferTransaction.create(
 Each setting is explained below.
 
 #### Expiry date
-2 hours is the sdk's default setting. 
+2 hours is the SDK's default setting. 
 A maximum of 6 hours can be specified.
 ```js
 sym.Deadline.create(epochAdjustment,6)
@@ -82,9 +81,7 @@ sym.PlainMessage.create("Hello Symbol!")
 sym.EncryptedMessage('294C8979156C0D941270BAC191F7C689E93371EDBC36ADD8B920CF494012A97BA2D1A3759F9A6D55D5957E9D');
 ```
 
-When you use EncryptedMessage, a flag (marker) is attached to the message that means 'the specified message is encrypted'.
-Explorer and Wallet will use the flag as a reference to hide it or not decode the message, etc.
-Encryption is not made by the method itself.
+When you use EncryptedMessage, a flag (marker) is attached to the message that means 'the specified message is encrypted'. The explorer and wallet will use the flag as a reference to hide it or not decode the message. Encryption is not made by the method itself.
 
 
 ##### Raw data
@@ -94,14 +91,14 @@ sym.RawMessage.create(uint8Arrays[i])
 
 #### Maximum fee
 
-Although to ensure a transaction, paying a little more fee is better, having some knowledge about network fees is a good idea.
-The account specifies the maximum fee it is  acceptable to pay when it creates the transaction.
-On the other hand, nodes try to harvest only the transactions with the highest fees into a block at time.
+Although paying a small additional fee is better to ensure a transaction is successful, having some knowledge about network fees is a good idea.
+The account specifies the maximum fee it is willing to pay when it creates the transaction.
+On the other hand, nodes try to harvest only the transactions with the highest fees into a block at a time.
 This means that if there are many other transactions that are willing to pay more, the transaction will take longer to be approved.
-Conversely, if there are many transactions that want to pay less and the total amount is large, the transaction will be achieved with fees that are less than the maximum you set.
+Conversely, if there are many other transactions that want to pay less and your maximum fee is larger, then the transaction will be processed with a fee below the maximum value you set.
 
-It is determined by a transaction size x feeMultipriler.
-If it was 176 bytes and maxFee is set at 100, 17600µXYM = 0.0176XYM is allowed to be paid as a fee.
+The fee paid is determined by a transaction size x feeMultiplier.
+If it was 176 bytes and your maxFee is set at 100, 17600µXYM = 0.0176XYM is the maximum value you allow to be paid as a fee for the transaction.
 There are two ways to specify this: as feeMultiplier = 100 or as maxFee = 17600.
 
 ##### To specify as feeMultiprier = 100
@@ -121,11 +118,11 @@ tx = sym.TransferTransaction.create(
 );
 ```
 
-We will use the specified method of specifying feeMultiprier = 100.
+We will use the method of specifying feeMultiplier = 100.
 
 ## 4.3 Signature and announcement
 
-Sign the transaction which you create with the private key and announce it through any node.
+Sign the transaction which you create with the private key and announce it to any node.
 
 ### Signature
 ```js
@@ -164,10 +161,9 @@ console.log(res);
 > TransactionAnnounceResponse {message: 'packet 9 was pushed to the network via /transactions'}
 ```
 
-As in the script above, a response has `packet n was pushed to the network`, the transaction has been accepted by the node.
-This only means to the extent that there were no anomalies in the formatting of the transaction.
-In order to maximise the response speed of the node, Symbol returns the response of the received result and disconnects the connection before verifying the content of the transaction.
-The response value is merely the receipt of this information. If there is an error in the format, the message response will be as follows.
+As in the script above, a response will be sent: `packet n was pushed to the network`, this means that the transaction has been accepted by the node.
+However, this only means that there were no anomalies in the formatting of the transaction.
+In order to maximise the response speed of the node, Symbol returns the response of the received result and disconnects the connection before verifying the content of the transaction. The response value is merely the receipt of this information. If there is an error in the format, the message response will be as follows:
 
 
 ##### Sample output of response if announcement fails
@@ -180,7 +176,7 @@ Uncaught Error: {"statusCode":409,"statusMessage":"Unknown Error","body":"{\"cod
 
 ### Status confirmation
 
-Confirm the status of transactions accepted by the node.
+Check the status of transactions accepted by the node.
 
 ```js
 tsRepo = repo.createTransactionStatusRepository();
@@ -215,7 +211,7 @@ If the transaction has not been accepted, the output will show the ResourceNotFo
 Uncaught Error: {"statusCode":404,"statusMessage":"Unknown Error","body":"{\"code\":\"ResourceNotFound\",\"message\":\"no resource exists with id '18AEBC9866CD1C15270F18738D577CB1BD4B2DF3EFB28F270B528E3FE583F42D'\"}"}
 ```
 
-This error seems occur when the maximum fee specified in the transaction is less than the minimum fee set by the node, or a transaction that is required to be announced as an aggregate transaction is announced as a single transaction.
+This error occurs when the maximum fee specified in the transaction is less than the minimum fee set by the node, or if a transaction that is required to be announced as an aggregate transaction is announced as a single transaction.
 
 ### Approval Confirmation
 
@@ -263,11 +259,11 @@ console.log(txInfo);
     type: 16724
     version: 1
 ```
-##### Points to note
+##### Note
 
-Even when a transaction is confirmed in a block, the confirmation of the transaction still has a possibility of revoke if a rollback occurs.
-After a block has been approved, the probability of a rollback occurring decreases as the approval proceeds for several blocks.
-In addition, waiting for the finalisation block, which is carried out by voting on the Voting nodes, ensures that the recorded data is certain.
+Even when a transaction is confirmed in a block, the confirmation of the transaction still has the possibility of being revoked if a rollback occurs.
+After a block has been approved, the probability of a rollback occurring decreases as the approval process proceeds for several blocks.
+In addition, waiting for the finalisation block, which is carried out by voting nodes, ensures that the recorded data is certain.
 
 ##### Sample script
 After announcing the transaction, it is useful to see the following script to keep track of the chain status.
@@ -335,8 +331,8 @@ MessageType is as follows.
 ```
 ## 4.6 Aggregate Transactions
 
-Aggregate transactions can announce merging multiple transactions into one.
-Symbol’s public network supports aggregate transaction containing up to 100 inner transactions (involving up to 25 different cosignatories).
+Aggregate transactions can merge multiple transactions into one.
+Symbol’s public network supports aggregate transactions containing up to 100 inner transactions (involving up to 25 different cosignatories).
 The content covered in subsequent chapters includes functions that require an understanding of aggregate transactions.
 This chapter introduces only the simplest of aggregate transactions.
 
@@ -380,18 +376,17 @@ First, create the transactions to be included in the aggregate transaction.
 It is not necessary to specify a Deadline at this time.
 When listing, add toAggregate to the generated transaction and specify the publickey of the sender account.
 Note that the sender and signing accounts **do not always match**.
-Writing it this way because of the possibility of things like 'Alice signing Bob's sending transaction', which will be explained in subsequent chapters.
+This is because of the possibility of scenarios such as 'Alice signing the transaction that Bob sent', which will be explained in subsequent chapters.
 This is the most important concept in using transactions on the Symbol blockchain.
-The transactions in this chapter are the same Alice, so the signature on the aggregate bonded transaction also specifies Alice.
+The transactions in this chapter are sent and signed by Alice, so the signature on the aggregate bonded transaction also specifies Alice.
 
 ## 4.7 Tips for use
 
 ### Proof of existence
 
-The chapter on Account described how to sign and verify data by account.
-By putting this data on a transaction and having the blockchain confirmation, it will be impossible to delete the fact that an account has proved the existence of certain data at a certain time.
-It can be considered to have the same meaning as the possession between interested parties of a time-stamped electronic signature.
-（Legal decisions are left to experts）
+The chapter on Accounts described how to sign and verify data by account.
+Putting this data into a transaction that is confirmed on the blockchain makes it impossible to delete the fact that an account has proved the existence of certain data at a certain time.
+It can be considered to have the same meaning as the possession between interested parties of a time-stamped electronic signature.（Legal decisions are left to experts）
 
 The blockchain updates data such as transactions with the existence of this "indelible fact that the account has proved".
 And also the blockchain can be used as proof of knowledge of a fact that nobody should have known about yet.
