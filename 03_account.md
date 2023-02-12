@@ -47,7 +47,7 @@ console.log(aliceRawAddress);
 > TBXUTAX6O6EUVPB6X7OBNX6UUXBMPPAFX7KE5TQ
 ```
 
-These things above are the most basic information for operating the blockchain. It is also better to check how to generate accounts from a private key and how to generate classes that only deal with public key and addresses.  
+These things above are the most basic information for operating the blockchain. It is also better to check how to generate accounts from a private key and how to generate classes that only deal with publickey and addresses.  
 
 ### Account generation from private key.
 ```js
@@ -164,7 +164,7 @@ Inverting an ID value that is too large into a numerical value with COMPACT may 
 
 #### Adjustment of display digits
 
-Treating the amount of owned tokens as an integer value to avoid errors. We can get the divisibility from the token definition, so we can use that value to display the exact amount of owned tokens.  
+Treating the amount of owned tokens as an integer value to avoid rounding errors. We can get the divisibility from the token definition, so we can use that value to display the exact amount of owned tokens.  
 
 ```js
 mosaicRepo = repo.createMosaicRepository();
@@ -283,7 +283,7 @@ The QR code or text output by this jsonSignerQR can be saved to recover the priv
 #### Decryption of encrypted private key
 
 ```js
-//Assign stored text or text retrived from a QR code scan into json signer QR
+//Assign stored text or text retrieved from a QR code scan into json signer QR
 jsonSignerQR = '{"v":3,"type":2,"network_id":152,"chain_id":"7FCCD304802016BEBBCD342A332F91FF1F3BB5E902988B352697BE245F48E836","data":{"ciphertext":"e9e2f76cb482fd054bc13b7ca7c9d086E7VxeGS/N8n1WGTc5MwshNMxUiOpSV2CNagtc6dDZ7rVZcnHXrrESS06CtDTLdD7qrNZEZAi166ucDUgk4Yst0P/XJfesCpXRxlzzNgcK8Q=","salt":"54de9318a44cc8990e01baba1bcb92fa111d5bcc0b02ffc6544d2816989dc0e9"}}';
 
 qr = require("/node_modules/symbol-qr-library");
