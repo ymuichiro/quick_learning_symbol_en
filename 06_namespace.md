@@ -1,14 +1,15 @@
-# 6.Namespace
+# 6. Namespaces
 
-Namespaces are human-readable text strings that can rent and link with an Address or a Mosaic.
+Namespaces are human-readable text strings that can be rented and linked with an address or a mosaic.
 The name has a maximum length of 64 characters (the only allowed characters are `a` through `z`, `0` through `9`, `_` and `-`).
 
 ## 6.1 Fee calculation
 
-For renting a namespace, there is a rental fee which is separate from the network fee.
-Renting fees fluctuate depending on the activity proportion of the network therefore better to check before acquisition.
+There is a rental fee associated with registering a namespace which is separate from the network fee.
+Rental fees fluctuate depending on network activity with costs increasing during busy network periods, therefore it is sensible to check fees before registering a namespace.
 
-In the following example, the fees are calculated for a 365-day renting of a root namespace.
+In the following example, the fees are calculated for a 365-day rental of a root namespace.
+
 
 ```js
 nwRepo = repo.createNetworkRepository();
@@ -28,7 +29,7 @@ console.log("rootNsRenatalFeeTotal:" + rootNsRenatalFeeTotal);
 ```
 
 The duration is specified by the number of blocks; one block is calculated as 30 seconds.
-A minimum of 30 days are required (maximum of 1825 days).
+There is a minimum rental period of 30 days (maximum 1825 days).
 
 Calculate the fee for acquiring a sub namespace.
 
@@ -41,7 +42,7 @@ console.log(childNamespaceRentalFee);
 > 10000000 //10XYM
 ```
 
-There is no duration limit specified for the sub namespace. It can be used as long as the root namespace is rented.
+There is no duration limit specified for the sub namespace. It can be used for as long as the root namespace is registered.
 
 ## 6.2 Rental
 
@@ -70,7 +71,7 @@ signedTx = alice.sign(subNamespaceTx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-If you want to create a tier 2 sub namespace, for example in case of defining xembook.tomato.morning, is the following.
+You can also create a tier 2 sub namespace, for example in this case, defining xembook.tomato.morning:
 
 ```js
 subNamespaceTx = sym.NamespaceRegistrationTransaction.createSubNamespace(
@@ -101,7 +102,7 @@ endDate = new Date(lastBlock.timestamp.compact() + remainHeight * 30000 + epochA
 console.log(endDate);
 ```
 
-Obtain the information of the namespace ending and output the date and time of the remaining number of blocks subtracted from the current block height multiplied by 30 seconds (the average block generation interval).
+Retrieve information about the namespace expiry and output the date and time of the remaining number of blocks subtracted from the current block height multiplied by 30 seconds (the average block generation interval).
 For testnet, the update deadline is postponed by about a day from the expiry date. And for the mainnet, this value is 30 days, please note it.
 
 
@@ -127,7 +128,7 @@ await txRepo.announce(signedTx).toPromise();
 ```
 The linked address does not have to be owned by you.
 
-### Link to a mosic
+### Link to a mosaic
 ```js
 namespaceId = new sym.NamespaceId("xembook.tomato");
 mosaicId = new sym.MosaicId("3A8416DB2D53xxxx");
@@ -142,7 +143,7 @@ signedTx = alice.sign(tx,generationHash);
 await txRepo.announce(signedTx).toPromise();
 ```
 
-Mosaic can only be linked if it is identical to the address at which the mosaic was created.
+Mosaics can only be linked if it is identical to the address at which the mosaic was created.
 
 
 ## 6.4 Use as an UnresolvedAccount
@@ -290,7 +291,7 @@ console.log(namespaceIds);
 
 ### Receipt reference
 
-Check how the blockchain side has solutioned the namespace used for the transaction.
+Check how the blockchain has resolved the namespace used for the transaction.
 
 ```js
 receiptRepo = repo.createReceiptRepository();
@@ -316,7 +317,7 @@ ResolutionType is as follows.
 ```
 
 #### Note
-As the namespace itself is a renting structure, the link to the namespace used in past transactions may differ from the link to the current namespace.
+As the namespace itself is rented, the link to the namespace used in past transactions may differ from the link to the current namespace.
 
 Always refer to your receipt if you want to know which account you were linked to at the time, e.g. when referring to historical data.
 
@@ -330,7 +331,8 @@ As duplicate namespaces are restricted by protocol, user can build the brand val
 Beware of hacking external domains and renewing your own Symbol namespaces duration.
 
 
-#### Note on accounts acquiring namespace
-Namespace is a feature with the renting duration concept.
+#### Note on accounts acquiring a namespace
+Namespaces are rented for a specified duration .
 At the moment, options for acquired namespaces are only abandonment or duration extension.
-In case utilising namespace in a system where operational transfers, etc. are considered, we recommend acquiring a namespace with a multi-signing account (Chapter 9).
+In case of utilising a namespace in a system where operational transfers, etc. are considered, we recommend acquiring a namespace with a multisig account (Chapter 9).
+
