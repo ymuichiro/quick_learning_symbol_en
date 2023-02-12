@@ -1,7 +1,7 @@
-# 11.Restrictions
+# 11. Restrictions
 
 This section describes restrictions on accounts and global restrictions on mosaics.
-In this chapter, try restricting the permissions of existing accounts, so please create a new disposable account to try it out.
+In this chapter, we will restrict the permissions of existing accounts, so please create a new disposable account to try it out.
 
 ```js
 //Generating disposable accounts Carol
@@ -43,10 +43,10 @@ For AddressRestrictionFlag is as follows.
 
 In addition to AllowIncomingAddress, the following flags can be used for AddressRestrictionFlag.
 
-- AllowIncomingAddress：Allowing to receive only from specific addresses
-- AllowOutgoingAddress：Permitting to send only to specific addresses
-- BlockIncomingAddress：Rejection of incomings from designated addresses
-- BlockOutgoingAddress：Prohibition of outgoing to specific addresses
+- AllowIncomingAddress：Allowing incoming transactions only from specific addresses
+- AllowOutgoingAddress：Permitting outgoing transactions only to specific addresses
+- BlockIncomingAddress：Reject incoming transactions from designated addresses
+- BlockOutgoingAddress：Prohibit outgoing transactions to specific addresses
 
 ### Restrictions on receiving designated mosaics
 
@@ -71,10 +71,10 @@ MosaicRestrictionFlag is as follows.
 ```
 
 - AllowMosaic：Allowing to receive only transactions containing the specified mosaic
-- BlockMosaic：Rejection of incomings of transactions containing specified mosaics
+- BlockMosaic：Rejection of incoming transactions containing specified mosaics
 
 There is no restriction function for mosaic outgoing transactions.
-Please note that not to be confused with the global mosaic restriction, which restricts the behaviour of mosaics, described below.
+Please note that this should not to be confused with the global mosaic restriction, which restricts the behaviour of mosaics, described below.
 
 ### Restrictions on specified transactions
 
@@ -97,10 +97,10 @@ OperationRestrictionFlag is as follows.
 {16388: 'AllowOutgoingTransactionType', 49156: 'BlockOutgoingTransactionType'}
 ```
 
-- AllowOutgoingTransactionType：Permitting only for specified transactions
-- BlockOutgoingTransactionType：Prohibition of specified transactions
+- AllowOutgoingTransactionType：Permit only for specified transaction types
+- BlockOutgoingTransactionType：Prohibit only for specified transaction types
 
-There is no restriction function for transaction reception. The operations that can be specified are as follows.
+There is no restriction function for transaction receipts. The operations that can be specified are as follows.
 
 TransactionType is as follows.
 
@@ -117,7 +117,7 @@ If BlockOutgoingTransactionType is specified, ACCOUNT_OPERATION_RESTRICTION cann
 
 ### Confirmation
 
-Check the information on the restrictions you have set
+Check the information on the restrictions that you have set
 
 ```js
 resAccountRepo = repo.createRestrictionAccountRepository();
@@ -126,7 +126,7 @@ res = await resAccountRepo.getAccountRestrictions(carol.address).toPromise();
 console.log(res);
 ```
 
-###### Sample outlet
+###### Sample output
 
 ```js
 > AccountRestrictions
@@ -143,10 +143,10 @@ console.log(res);
           0: Address {address: 'TCW2ZW7LVJMS4LWUQ7W6NROASRE2G2QKSBVCIQY', networkType: 152}
 ```
 
-## 11.2 Mosaic Global Restrictions
+## 11.2 Mosaic Global Restriction
 
 Mosaic Global Restriction sets the conditions under which mosaics can be transferred.  
-Assigning to each account for Numeric metadata dedicated to the mosaic global restriction.  
+Assigning to each account for numeric metadata dedicated to the mosaic global restriction.  
 The relevant mosaic can only be sent if both the incoming and outgoing accounts meet the conditions.
 
 Firstly, setting up the necessary libraries.
@@ -236,7 +236,7 @@ MosaicRestrictionType is as follows.
 ### Applying mosaic restrictions to accounts
 
 Add eligibility information against the Mosaic Global Restriction to Carol and Bob.  
-There are no restrictions on mosaics already owned, as these restrictions apply to incoming and outgoing.  
+There are no restrictions on mosaics already owned, as these restrictions apply to incoming and outgoing transactions.  
 For a successful transfer, both sender and receiver must fulfil the conditions.  
 Restrictions can be placed on any account with the private key of the mosaic creator without requiring a signature of consent.
 
@@ -280,7 +280,7 @@ res = await resMosaicRepo
 console.log(res);
 ```
 
-###### Sample outlet
+###### Sample output
 
 ```js
 > data
@@ -308,7 +308,7 @@ console.log(res);
   ...
 ```
 
-### Confirmation of transferring
+### Confirmation of transfer
 
 Check the restriction status by transferring the mosaic.
 
@@ -345,18 +345,14 @@ Failure will result in the following error status.
 
 ## 11.3 Tips for use
 
-When considering social implementation of blockchain, for example, it is possible to envisage an operation that does not involve accounts that aim to only have one role from a legal or trust perspective, or accounts that are not related to each other.
-By effectively applying account restrictions and mosaic global restrictions to the mode of operation in such cases users can flexibly control the behaviour of the mosaic.
+"Account restriction" and "Mosaic Global Restriction" features can be used to control the properties of Symbol accounts and mosaics. The flexibility of restrictions has the potential to fulfil practical use cases of the Symbol blockchain in real-world situations. For example, it could be necessary to place limitations on the transfer of a specific mosaic to comply with laws and regulations or to avoid specific tokens issued by a business from being traded. Accounts can also be limited to restrict incoming transactions of certain mosaics or from specific users to avoid spam or malicious transactions providing additional safety to Symbol users.
 
 ### Account burn
 
-AllowIncomingAddress to receive only from the specified address, and then Sending the entire XYM can explicitly create an account that is difficult to operate on its own, even if it has a private key.  
-(It can also be authorised by a node with a minimum fee set to 0, which has a non-zero chance of being authorised).
+Using "AllowIncomingAddress" to limit funds being received only from a specified address and then sending the entire XYM balance to another account a user can explicitly create an account that is difficult to operate on its own, even with the  private key. (Note, it possibly to be authorised by a node whose minimum fee is 0.)
 
 ### Mosaic lock
-
-You can distribute a mosaic with non-transferable settings and lock the mosaic if the distributor's account refuses to receive the mosaic.
+A mosaic can be issued with non-transferable settings, if the account creator prohibits the mosaic from being received by their account then the mosaic is locked and cannot be moved from the recipient's account.
 
 ### Proof of membership
-
-Proof of ownership was explained in the chapter on mosaics. By utilising the mosaic global  restriction, it is possible to create a mosaic that can only be owned and circulated between accounts that have done KYC, creating a unique economic zone to which only the owner can belong.
+Proof of ownership was explained in the chapter on mosaics. By utilising the mosaic global restriction, it is possible to create a mosaic that can only be owned and circulated between accounts that have for instance, gone through a KYC process, creating a unique economic zone to which only the owner can belong.
