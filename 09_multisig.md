@@ -1,17 +1,14 @@
-# 9.Multi signature
+# 9. Multisignature
 Symbol accounts can be converted to multisig.
 
 
 ### Points
 
-Multisig accounts can have up to 25 cosignatories.
-An account can be cosigner of up to 25 multisig accounts.
-Multisig account can compose up to 3 levels. 
-This chapter explain 1 level multisig.
+Multisig accounts can have up to 25 co-signatories. An account can be cosigner of up to 25 multisig accounts. Multisig accounts can be hierarchical and composed of up to 3 levels. This chapter explains single-level multisig.
 
 ## 9.0 Preparing an account
 Create the accounts used in the sample source code in this chapter and output each secret key.
-Note that the Bob multisig account  in this chapter will be unusable if Carol's secret key is lost.
+Note that the Bob multisig account in this chapter will be unusable if Carol's secret key is lost.
 
 
 ```js
@@ -29,7 +26,7 @@ console.log(carol4.privateKey);
 console.log(carol5.privateKey);
 ```
 
-When using a testnet, the equivalent of the network fee from FAUCET should be available in the bob and carol1 accounts.
+When using a testnet, the equivalent of the network fee from the faucet should be available in the bob and carol1 accounts.
 
 - Faucet
     - https://testnet.symbol.tools/
@@ -43,18 +40,18 @@ console.log("https://testnet.symbol.tools/?recipient=" + carol1.address.plain() 
 
 ## 9.1 Multisig registration
 
-To have a multisig account, Symbol does not need to create a new one, but rather multisig an existing account by specifying cosignatories.
-Creating a multisig account requires the consent signature (opt-in) of the account designated as the cosignatory, and to confirm it, Aggregate Transaction are used.
+Symbol does not need to create a new account when setting up a multisig. Instead co-signatories can be specified for an existing account.
+Creating a multisig account requires the consent signature (opt-in) of the account designated as the co-signatory. Aggregate Transactions are used to confirm this.
 
 ```js
 multisigTx = sym.MultisigAccountModificationTransaction.create(
     undefined, 
-    3, //minApproval:Minimum incremental number of signatories required for approval
-    3, //minRemoval:Minimum incremental number of signatories required for expulsion
+    3, //minApproval:Minimum number of signatories required for approval
+    3, //minRemoval:Minimum number of signatories required for expulsion
     [
         carol1.address,carol2.address,carol3.address,carol4.address
     ], //Additional target address list
-    [],//Blocked address list
+    [],//Reemoved address list
     networkType
 );
 aggregateTx = sym.AggregateTransaction.createComplete(
@@ -66,7 +63,7 @@ aggregateTx = sym.AggregateTransaction.createComplete(
 ).setMaxFeeForAggregate(100, 4); //Number of co-signatories to the second argument:4
 signedTx =  aggregateTx.signTransactionWithCosignatories(
     bob, //Multisig account
-    [carol1,carol2,carol3,carol4], //Accounts specified as being added or blocked
+    [carol1,carol2,carol3,carol4], //Accounts specified as being added or removed
     generationHash,
 );
 await txRepo.announce(signedTx).toPromise();
@@ -74,13 +71,13 @@ await txRepo.announce(signedTx).toPromise();
 
 ## 9.2 Confirmation
 
-### Confirmation of multisigged accounts
+### Confirmation of multisig account
 ```js
 msigRepo = repo.createMultisigRepository();
 multisigInfo = await msigRepo.getMultisigAccountInfo(bob.address).toPromise();
 console.log(multisigInfo);
 ```
-###### Sample outlet
+###### Sample output
 ```js
 > MultisigAccountInfo 
     accountAddress: Address {address: 'TCOMA5VG67TZH4X55HGZOXOFP7S232CYEQMOS7Q', networkType: 152}
@@ -94,18 +91,16 @@ console.log(multisigInfo);
     multisigAddresses: []
 ```
 
-It shows that cosignatoryAddresses are registered as cosignatories.
-Also, minApproval:3 shows that the number of signatures required for a transaction execution is 3
-minRemoval: 3 shows that the number of signatories required to remove a cosignatory is 3.
+It shows that cosignatoryAddresses are registered as co-signatories. Also, minApproval:3 shows that the number of signatures required for a transaction to execute is 3. minRemoval: 3 shows that the number of signatories required to remove a cosignatory is 3.
 
 
-### Confirmation of cosignatory accounts
+### Confirmation of co-signatory accounts
 ```js
 msigRepo = repo.createMultisigRepository();
 multisigInfo = await msigRepo.getMultisigAccountInfo(carol1.address).toPromise();
 console.log(multisigInfo);
 ```
-###### Sample outlet
+###### Sample output
 ```
 > MultisigAccountInfo
     accountAddress: Address {address: 'TCV67BMTD2JMDQOJUDQHBFJHQPG4DAKVKST3YJI', networkType: 152}
@@ -151,8 +146,7 @@ await txRepo.announce(signedTx).toPromise();
 
 ### Transfer with an Aggregate Bonded Transaction
 
-Aggregate bonded transactions can be announced without specifying cosignatories.
-It is completed by declaring that the transaction will be pre-stored with a hash lock, and the cosigner additionally signs the transaction once it has been stored on the network.
+Aggregate bonded transactions can be announced without specifying co-signatories. It is completed by declaring that the transaction will be pre-stored with a hash lock, and the co-signer additionally signs the transaction once it has been stored on the network.
 
 ```js
 tx = sym.TransferTransaction.create(
@@ -186,19 +180,18 @@ await txRepo.announce(signedLockTx).toPromise();
 //Announces bonded TX after confirming approval of hashlocks
 await txRepo.announceAggregateBonded(signedAggregateTx).toPromise();
 ```
-When a bonded transaction is known by a node, it will be a partial signature state and will be signed with a multisig account, using the cosignature introduced in chapter 8.Locking.
-It can also be confirmed by a wallet that supports cosignatures.
+When a bonded transaction is known by a node, it will be a partial signature state and will be signed with a multisig account, using the co-signature introduced in chapter 8. Locking. It can also be confirmed by a wallet that supports co-signatures.
 
 
-## 9.4 Confirmation of multisig transferring
+## 9.4 Confirmation of multisig transfer
 
-Check the results of a multisig transferring transaction.
+Check the results of a multisig transfer transaction.
 
 ```js
 txInfo = await txRepo.getTransaction(signedTx.hash,sym.TransactionGroup.Confirmed).toPromise();
 console.log(txInfo);
 ```
-###### Sample outlet
+###### Sample output
 ```js
 > AggregateTransaction
   > cosignatures: Array(2)
@@ -251,7 +244,7 @@ console.log(txInfo);
     - Carol1
         - AggregateTransaction.signer.address
             - TCV67BMTD2JMDQOJUDQHBFJHQPG4DAKVKST3YJI
-- Cosigner account
+- Co-signer account
     - Carol2
         - AggregateTransaction.cosignatures[0].signer.address
             - TB3XP4GQK6XH2SSA2E2U6UWCESNACK566DS4COY
@@ -261,10 +254,9 @@ console.log(txInfo);
 
 ## 9.5 Modifying a multisig account min approval
 
-### Reduced multisig configuration
+### Editing multisig configuration
 
-To reduce the number of co-signatories, designate the address for removing and adjust the number of cosignatories so that the minimum number of signatories is not exceeded and announce the transaction.
-It is not necessary to include the account subject to remove as a cosignatory.
+To reduce the number of co-signatories, specify the address to remove and adjust the number of co-signatories so that the minimum number of signatories is not exceeded and then announce the transaction. It is not necessary to include the account subject to remove as a co-signatory.
 
 ```js
 multisigTx = sym.MultisigAccountModificationTransaction.create(
@@ -290,10 +282,10 @@ signedTx =  aggregateTx.signTransactionWithCosignatories(
 await txRepo.announce(signedTx).toPromise();
 ```
 
-### Replacement of cosignatory composition
+### Replacement of co-signatories
 
-To replace a cosignatory, specify the address to be added and the address to be removed.
-The cosignature of the new additionally designated account is always required.
+To replace a co-signatory, specify the address to be added and the address to be removed.
+The co-signature of the new additionally designated account is always required.
 
 ```js
 multisigTx = sym.MultisigAccountModificationTransaction.create(
@@ -321,23 +313,16 @@ await txRepo.announce(signedTx).toPromise();
 
 ## 9.6 Tips for use
 
-### Multi-factor authorization
+### Multi-factor authorisation
 
-The management of private key can be distributed across multiple terminals.
-To ensure safe recovery in the event of loss or leakage if a security key can be prepared.
-Please note that it is also necessary to consider two patterns of multisig safe operation that can be stolen and lost.
-- Stolen：Other one can use the private key.
-- Lost：No one will be able to use the private key.
-
+The management of private keys can be distributed across multiple terminals. Multisigs can be used to ensure safe recovery in the event of a lost or compromised key. If the key is lost then the user can access funds through co-signatories and if stolen then the attacker cannot transfer funds without cosignatory approval.
 
 ### Account ownership
 
-The private key of a multisig account is deactivated and unless the account is un-multisigged, even if the private key is known. Mosaic transferring will no longer be possible.
-As explained in chapter 5. Mosaics, that possession is a “the state of being able to give it up at will', it can be said the owner of the mosaic, etc. that the multisigged account has is the cosignatory.
-And Symbol allows replacement of cosignatory in composition of multisig, so account ownership can be securely replaceable to another cosignatory.
+The private key of a multisig account is deactivated and unless the multisig is removed on the account sending mosaics will no longer be possible. As explained in Chapter 5. Mosaics, possession is “the state of being able to give it up at will', it can be said the owner of the assets on a multisig account are the co-signatories. Symbol allows replacement of co-signatories in a multisig configuration, so account ownership can be securely replaceable to another co-signatory.
 
-### Work flow
+### Workflow
 
 Symbol allows you to configure up to 3 levels of multisig (multi-level multisig).
 The use of multi-level multisig accounts prevents the use of stolen backup keys to complete a multisig, or the use of only an approver and an auditor to complete a signature.
-This allows the existence of transactions on the blockchain to be presented as evidence that actual operations and other conditions have been met.
+This allows the existence of transactions on the blockchain to be presented as evidence that certain operations and conditions have been met.
