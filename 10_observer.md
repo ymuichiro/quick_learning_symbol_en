@@ -1,4 +1,4 @@
-# 10.Monitoring
+# 10. Monitoring
 
 Symbol nodes can monitor blockchain state changes via WebSocket communication.
 
@@ -38,9 +38,9 @@ listener.open().then(() => {
 });
 ```
 
-After executing the above listener, announce the transaction to be sent to ALICE.
+After executing the above listener, announce the transaction to be sent to Alice.
 
-###### Sample outlet
+###### Sample output
 
 ```js
 > Promise {<pending>}
@@ -68,7 +68,7 @@ Unconfirmed transactions are received with transactionInfo.height=0.
 
 ## 10.3 Block monitoring
 
-Detects newly generated block.
+Detects newly generated blocks.
 
 ```js
 listener.open().then(() => {
@@ -77,7 +77,7 @@ listener.open().then(() => {
 });
 ```
 
-###### Sample outlet
+###### Sample output
 
 ```js
 > Promise {<pending>}
@@ -103,9 +103,9 @@ listener.open().then(() => {
     version: 1
 ```
 
-If listener.newBlock() is used, communication occurs approximately every 30 seconds, making WebSocket disconnections less likely to occur.  
-In rare cases, block generation may exceed one minute, in which case the listener must be reconnected.
-(Other reasons may also cause disconnection, so if you want to be sure, supplement with onclose as described below.)
+If listener.newBlock() is used, communication occurs approximately every 30 seconds, making WebSocket disconnections less likely to occur.
+
+In rare cases, block generation may exceed one minute, in which case the listener must be reconnected. (Other factors may also cause disconnection, so if you want to be sure, supplement with onclose as described below.)
 
 ## 10.4 Signature request
 
@@ -120,7 +120,7 @@ listener.open().then(() => {
 });
 ```
 
-###### Sample outlet
+###### Sample output
 
 ```js
 > AggregateTransaction
@@ -150,7 +150,7 @@ Whether a cosignature is required is determined by a separate filter.
 
 ### Continuous connection
 
-Select randomly from the list and try to connect.
+Select randomly from the node list and try to connect.
 
 ##### Connection to node
 
@@ -211,8 +211,7 @@ function createRepo(nodes) {
 }
 ```
 
-In rare cases, there are some nodes for which the /network/properties endpoint has not been freed, so the
-getEpochAdjustment() information is retrieved and checked. If it cannot be obtained, createRepo is read recursively.
+In rare cases, there are some nodes for which the /network/properties endpoint has not been freed, so the getEpochAdjustment() information is retrieved and checked. If it cannot be obtained, createRepo is read recursively.
 
 ##### Continuous connection listeners
 
@@ -327,4 +326,4 @@ bondedSubscribe(bondedHttp);
 
 ##### Note
 
-To avoid auto-signing with scam transactions, make sure that ensuring a checking process is carried out, e.g. by checking the sender's account.
+To avoid auto-signing scam transactions, make sure that you ensure a checking procedure is carried out, e.g. by checking the sender's account.
