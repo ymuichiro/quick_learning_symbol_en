@@ -1,10 +1,10 @@
 # 3.Account
 
-An account is a data deposit structure in which information and assets associated with a private key is recorded. Only by signing with the private key associated with the account is the datas on the blockchain updatable.  
+An account is a data deposit structure in which information and assets associated with a private key is recorded. Only by signing with the private key associated with the account is the data updated on the blockchain.
 
 ## 3.1 Creating an account
 
-The account contains a key pair, which is a set of private and public key, an address and other information. First of all, try creating an account  randomly and check the information that is contained.  
+The account contains a key pair, which is a set of private and public keys, an address and other information. First of all, try creating an account  randomly and check the information that is contained.  
 
 ### Create a new account 
 ```js
@@ -34,8 +34,8 @@ console.log(alice.publicKey);
 ```
 
 #### Notes
-If the private key is lost, the data associated with that account cannot be manipulated forever. In addition, the private key must not be shared with others, as the data manipulation is signed using the nature of the private key, which is unknown to others. Refrain from sharing the private key and it is also advisable not passing on the private key within the organization and continuing to operate with it.
-In general web services, passwords are allocated to "account ID", so passwords can be changed from the account, but in blockchain, a unique ID (address) is allocated to the private key that is the password, thus it is not possible to change or re-generate the private key associated with an account from the account.  
+If the private key is lost, the data associated with that account can never be changed and any funds will be lost. In addition, the private key must not be shared with others since knowledge of the private key will give full access to the account. 
+In general web services, passwords are allocated to an "account ID", so passwords can be changed from the account, but in blockchain, a unique ID (address) is allocated to the private key that is the password, thus it is not possible to change or re-generate the private key associated with an account from the account.  
 
 
 ### Deriving of address
@@ -47,7 +47,7 @@ console.log(aliceRawAddress);
 > TBXUTAX6O6EUVPB6X7OBNX6UUXBMPPAFX7KE5TQ
 ```
 
-These things above are the most basic information for operating the blockchain. It is also better to check how to generate accounts from private key and how to generate classes that only deal with public key and addresses.  
+These things above are the most basic information for operating the blockchain. It is also better to check how to generate accounts from a private key and how to generate classes that only deal with public key and addresses.  
 
 ### Account generation from private key.
 ```js
@@ -73,7 +73,7 @@ console.log(alicePublicAccount);
 
 ```
 
-### Address classe generation
+### Address class generation
 ```js
 aliceAddress = sym.Address.createFromRawAddress(
   "TBXUTAX6O6EUVPB6X7OBNX6UUXBMPPAFX7KE5TQ"
@@ -89,15 +89,15 @@ console.log(aliceAddress);
 
 ## 3.2 A TransferTransaction to another account
 
-Creating an account simply does not mean that data can be transferred to the blockchain.  
-Public blockchains require fees for data transferring in order to utilise resources effectively.  
-The Symbol blockchain, fees are paid with a native token which is called XYM.  
-Once you generated the account, send XYM to the account for the transaction fees which is described in chapters later.  
+Creating an account does not simply mean that data can be transferred on the blockchain.  
+Public blockchains require fees for data transfer in order to utilise resources effectively.  
+On the Symbol blockchain, fees are paid with a native token which is called XYM.  
+Once you have generated an account, send XYM to the account to cover transaction fees (described in later chapters).   
 
 ### Receive XYM from the faucet
 
-The Testnet can obtain XYM for verification from the faucet.  
-The Mainnet, you can buy XYM on exchanges, or use tipping services (NEMLOG, QUEST) to have donations.  
+Testnet XYM can be obtained for free using the faucet.  
+For Mainnet transactions, you can buy XYM on exchanges, or use tipping services such as NEMLOG and QUEST to have obtain donations.   
 
 Testnet
 - FAUCET
@@ -111,9 +111,9 @@ Mainnet
 
 
 
-### Check in explorer
+### Using the explorer
 
-Check transaction in the explorer after transferring from faucet to the account you have created.。
+Transactions can be viewed in the explorer after transferring from the faucet to the account you have created.
 
 - Testnet
   - https://testnet.symbol.fyi/
@@ -122,7 +122,7 @@ Check transaction in the explorer after transferring from faucet to the account 
 
 ## 3.3 Check account information
 
-Retrieve the account information kept in the node.
+Retrieve the account information stored by the node.
 
 ### Retrieve a list of owned mosaics
 
@@ -144,10 +144,10 @@ console.log(accountInfo);
 ```
 
 #### publicKey
-Account information which has just been created on the client side and is not used yet in the blockchain is not recorded. Account information will be recorded when receiving a transaction as a destination, then public key information will be recorded when sending a signed transaction. Therefore, publicKey is noted as`00000...`at this moment.
+Account information which has just been created on the client side and has not yet been involved in a transaction on the blockchain is not recorded. Account information will be stored on the blockchain when when the address first appears in a transaction. Therefore, the publicKey is noted as `00000...` at this moment.
 
 #### UInt64
-JavaScript will overflow when numbers are too large, so ID and amount are managed in the sdk's own format called UInt64. Use toString() to convert to string, compact() to convert to number and  toHex()  to convert to hexadecimal.
+JavaScript will overflow when numbers are too large, so ID and amount are managed in the SDK's own format called UInt64. Use toString() to convert to string, compact() to convert to number and toHex()  to convert to a hexadecimal.
 
 ```js
 console.log("addressHeight:"); //Block height at which the address is recorded
@@ -183,7 +183,7 @@ console.log(displayAmount);
 ## 3.4 Tips for use
 ### Encryption and signatures
 
-Both private key and public key generated as accounts can be used for conventional encryption and digital signatures. Data confidentiality and legitimacy can be verified on a p2p (end-to-end) basis, even if applications have reliability issues.  
+Both private and public keys generated for an account can be used for conventional encryption and digital signatures. Data confidentiality and legitimacy can be verified on a p2p (end-to-end) basis, even if applications have reliability issues.   
 
 #### Advance preparation: generating Bob account for connectivity test
 ```js
@@ -250,7 +250,7 @@ Note that signatures that do not use the blockchain may be re-used many times.
 ### Account management
 
 This section explains how to manage your account.  
-Private keys should not be kept as they are; here is how to encrypt and keep private key with a passphrase using symbol-qr-library.  
+Private keys should not be stored as plaintext; here is how to encrypt and store your private key with a passphrase using symbol-qr-library.  
 
 #### Encryption of private key
 
