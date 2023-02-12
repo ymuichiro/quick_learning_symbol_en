@@ -1,10 +1,10 @@
-# 5.Mosaics
+# 5. Mosaics
 
 This chapter describes the Mosaic settings and how they are generated.
 In Symbol, a token is called as a Mosaic.
 
-> According to Wikipedia, Tokens are 'objects of various shapes made of clay with a diameter of around 1 cm, excavated from Mesopotamian strata from around 8000 BC to 3000 BC'. On the other hand, mosaic,  is "a technique of decorative art in which small pieces are assembled and embedded to form a picture (image) or pattern. Stone, ceramics (mosaic tiles), coloured and colourless glass, shells and wood are used to decorate the floors and walls of buildings or crafts." it is said.
-In Symbol, the mosaic can be thought of as the various components that represent aspects of the ecosystem created by the Symbol blockchain.
+> According to Wikipedia, Tokens are 'objects of various shapes made of clay with a diameter of around 1 cm, excavated from Mesopotamian strata from around 8000 BC to 3000 BC'. On the other hand, mosaic,  is "a technique of decorative art in which small pieces are assembled and embedded to form a picture (image) or pattern. Stone, ceramics (mosaic tiles), coloured and colourless glass, shells and wood are used to decorate the floors and walls of buildings or crafts.".
+In Symbol, mosaics can be thought of as the various components that represent aspects of the ecosystem created by the Symbol blockchain.
 
 ## 5.1 Mosaic generation
 
@@ -34,12 +34,12 @@ MosaicFlags {
   supplyMutable: false, transferable: false, restrictable: false, revokable: false
 }
 ```
-Specify availability of supply changes, Transferability to third parties, application of Mosaic Global Restrictions and revocability from the issuer are permitted.
-This field cannot be changed later.
+Permissions of supply changes, transferability to third parties, application of Mosaic Global Restrictions and revocability from the issuer can be specified.
+Once set these properties cannot be changed at a later date.
 
 #### Divisibility
 
-Divisibility determines to what number of decimal places the quantity is to be measured. Data is held as integer values.
+Divisibility determines to what number of decimal places the quantity can be measured. Data is held as integer values.
 
 divisibility:0 = 1  
 divisibility:1 = 1.0  
@@ -47,9 +47,9 @@ divisibility:2 = 1.00
 
 #### Duration
 
-If specified 0, it can be used indefinitely.
-If a mosaic expiry date is set, the data will not disappear after the expiry date, but will remain as data.
-Please note that you can own up to 1,000 per account.
+If specified as 0, it cannot be subdivided into smaller units.
+If a mosaic expiry date is set, the data will not disappear after the expiry date.
+Please note that you can own up to 1,000 mosaics per account.
 
 
 Next, change the quantity.
@@ -63,7 +63,7 @@ mosaicChangeTx = sym.MosaicSupplyChangeTransaction.create(
     networkType
 );
 ```
-If supplyMutable:false, the quantity can only be changed if the entire mosaic is in the issuer.
+If supplyMutable:false, the quantity can only be changed if the entire supply of the mosaic is in the issuers account.
 If divisibility > 0, define it as an integer value with the smallest unit being 1.
 （Specify 100 if you want to create 1.00 with divisibility:2）
 
@@ -72,7 +72,7 @@ MosaicSupplyChangeAction is as follows.
 {0: 'Decrease', 1: 'Increase'}
 ```
 Specify Increase if you want to increase it.
-Marge two transactions above into an aggregate transaction.
+Merge two transactions above into an aggregate transaction.
 
 ```js
 aggregateTx = sym.AggregateTransaction.createComplete(
@@ -122,7 +122,7 @@ accountInfo.mosaics.forEach(async mosaic => {
 ## 5.2 Mosaic transfer
 
 Transfer the created mosaic.
-Those new to blockchain often imagine mosaic transferring is  "sending a mosaic stored on a client terminal to another client terminal", but mosaic information is always shared and synchronised across all nodes, and it is not about transferring mosaic information to the destination. 
+Those new to blockchain often imagine mosaic transferring as "sending a mosaic stored on a client terminal to another client terminal", but mosaic information is always shared and synchronised across all nodes, and it is not about transferring mosaic information to the destination. 
 More precisely, it refers to the operation of recombining token balances between accounts by 'sending transactions' to the blockchain.
 
 ```js
@@ -151,9 +151,9 @@ await txRepo.announce(signedTx).toPromise();
 
 
 
-##### Transfer mosaic list
+##### Transfer a list of mosaics
 
-Multiple mosaics can be transferred at once.
+Multiple mosaics can be transferred in a single transaction.
 To transfer XYM, specify the following mosaic ID.
 
 - Mainnet：6BED913FA20223F8
@@ -205,18 +205,20 @@ It can be seen that two types of mosaics have been transferred in the Mosaic of 
 ### Proof of existence
 
 Proof of existence by transaction was explained in the previous chapter.
-The transferring instructions created by an account can be left in an indelible record, so that a ledger can be created that is absolutely consistent.
-As a result of the accumulation of 'absolutely indelible transaction instructions' for all accounts, each account can prove its own mosaic ownership.
+The transferring instructions created by an account can be left as an indelible record, so that a ledger can be created that is absolutely consistent.
+As a result of the accumulation of 'absolute, indelible transaction instructions' for all accounts, each account can prove its own mosaic ownership.
 As a result of the accumulation of 'indelible transaction instructions' for all accounts, each account can prove its own mosaic ownership.
 (In this document, possession is defined as "the state of being able to give it up at will". Slightly off topic, but the meaning of 'state of being able to give it up at will' may make sense if you look at the fact that ownership is not legally recognised for digital data, at least in Japan yet, and that once you know the data, you cannot prove to others that you have forgotten it of your own will. The blockchain allows you to clearly indicate the relinquishment of that data, but I'll leave the details to the legal experts.)
 
-#### NFT(non fungible token)
+#### NFT (non fungible token)
 
-By limiting the number of tokens total supply to 1 and setting supplyMutable to false, only one token can be issued that exists.
-Mosaic holds the account address it created as an non-tamperable information, so the account's transferring transactions can be used as meta-data.
-Note that there is also a way to register metadata in the mosaic, described in Chapter 7, which can be updated by the multi signature of the registered account and the mosaic issuer.
+By limiting the number of tokens total supply to 1 and setting supplyMutable to false, only one token can be issued and no more can ever exist.
 
-There are many ways to realise NFT, an example process overview is given below (please set the nonce and flag information appropriately for execution).
+Mosaics store information about the account address that issued the mosaic and this data cannot be tampered with. Therefore, transactions from the account that issued the mosaic can be treated as metadata.
+
+Note that there is also a way to register metadata to the mosaic, described in Chapter 7, which can be updated by the multi signature of the registered account and the mosaic issuer.
+
+There are many ways to create NFTs, an example of the process is given below (please set the nonce and flag information appropriately for execution).
 ```js
 supplyMutable = false; //Availability of supply changes
 //Mosaic definition
@@ -268,7 +270,6 @@ When managing an NFT, please take care to manage it appropriately, for example b
 
 Setting transferable to false restricts resale, making it possible to define points that are less susceptible to the act on settlement laws or regulations.
 Setting revokable to true enables centrally managed point service operations where the user does not need to manage the private key to collect the amount used.
-Also, by setting revokable to true, a centrally-managed point operation can be performed where the user does not have to manage the private key but can collect the amount used.
 
 ```js
 transferable = false; //Transferability to third parties
