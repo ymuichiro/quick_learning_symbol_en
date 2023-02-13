@@ -1,15 +1,15 @@
-# 13.Validation
+# 13. Validation
 
-Verify information recorded on the blockchain.
+Verify all kinds of information recorded on the blockchain.
 While recording data on the blockchain is done with the agreement of all nodes, 
  **referencing data** on the blockchain is achieved by obtaining information from a single 
-node. For this reason, if a new transaction is to be made based on information from an untrusted node, the data obtained from the node must be verified.
+node. For this reason, to avoid making a new transaction based on information from an untrusted node, the data obtained from the node must be verified.
 
 ## 13.1 Transaction validation
 
-Verify that the transaction is included in the block header. If this verification succeeds, the transaction can be considered as authorised by the blockchain agreement.
+Verify that the transaction is included in the block header. If this verification succeeds, the transaction can be considered as authorised by blockchain agreement.
 
-Before running the sample scripts in this chapter, please load the following  necessary libraries.
+Before running the sample scripts in this chapter, please load the following necessary libraries.
 
 ```js
 Buffer = require("/node_modules/buffer").Buffer;
@@ -45,7 +45,7 @@ console.log(hash);
 console.log(tx);
 ```
 
-###### Sample outlet
+###### Sample output
 
 ```js
 > 257E2CAECF4B477235CA93C37090E8BE58B7D3812A012E39B7B55BA7D7FFCB20
@@ -95,8 +95,8 @@ Note that the part to be extracted is different for normal transactions and Aggr
 
 ### Calculation of the Merkle component hash
 
-The hash value of the transaction does not contain information about the cosignatory.  
-On the other hand, the Merkle root stored in the block header contains a hash of the transaction with the information of the cosignatory included.  
+The hash value of the transaction does not contain information about the co-signatory.  
+On the other hand, the Merkle root stored in the block header contains a hash of the transaction with the information of the co-signatory included.  
 Therefore, when verifying whether a transaction exists inside a block, the transaction hash must be converted to a Merkle component hash.
 
 ```js
@@ -116,7 +116,7 @@ console.log(merkleComponentHash);
 > C8D1335F07DE05832B702CACB85B8EDAC2F3086543C76C9F56F99A0861E8F235
 ```
 
-### InBlock validation
+### Inblock validation
 
 Retrieve the Merkle tree from the node and check that the Merkle root of the block header can be derived from the merkleComponentHash calculated.
 
@@ -138,7 +138,7 @@ function validateTransactionInBlock(leaf, HRoot, merkleProof) {
   return HRoot.toUpperCase() === HRoot0.toUpperCase();
 }
 
-//Calculat from transaction
+//Calculate from transaction
 leaf = merkleComponentHash.toLowerCase(); //merkleComponentHash
 
 //Retrieve from node
@@ -208,10 +208,9 @@ If the output was true, this block hash acknowledges the existence of the previo
 
 Now we have a known finalised block that can be verified by querying any node to support the existence of the block to be verified.
 
-
 ### Importance block validation
 
-ImportanceBlock is the block where the importance value is recalculated. Importance blocks occur every 720 blocks on Mainnet and every 180 blocks on Testnet. In addition to the NormalBlock, the following information is added.
+ImportanceBlocks are the blocks where the importance value is recalculated. Importance blocks occur every 720 blocks on Mainnet and every 180 blocks on Testnet. In addition to the NormalBlock, the following information is added.
 
 - votingEligibleAccountsCount
 - harvestingEligibleAccountsCount
@@ -276,7 +275,7 @@ if (block.type === sym.BlockType.ImportanceBlock) {
 }
 ```
 
-Verifying stateHashSubCacheMerkleRoots for accounts and metadata is described below.
+Verifying stateHashSubCacheMerkleRoots for accounts and metadata which is described below.
 
 ### Importance block stateHash validation
 
@@ -322,10 +321,10 @@ console.log(block.stateHash === hash);
 
 It can be seen that the nine states used to validate the block headers consist of stateHashSubCacheMerkleRoots.
 
-## 13.3 Account・metadata validation
+## 13.3 Account metadata validation
 
-The Markle Patricia Tree is used to verify the existence of accounts and metadata associated with a transaction.  
-If the service provider provides a Markle Patricia tree, users can verify its authenticity using nodes of their own choosing.
+The Merkle Patricia Tree is used to verify the existence of accounts and metadata associated with a transaction.  
+If the service provider provides a Merkle Patricia tree, users can verify its authenticity using nodes of their own choosing.
 
 ### Common functions for verification
 
@@ -380,7 +379,7 @@ function checkState(stateProof, stateHash, pathHash, rootHash) {
     treePathHash = treePathHash.slice(0, -1);
   }
 
-  //検証
+  //verification
   console.log(treeRootHash === rootHash);
   console.log(treePathHash === pathHash);
 }
@@ -388,7 +387,7 @@ function checkState(stateProof, stateHash, pathHash, rootHash) {
 
 ### 13.3.1 Account information validation
 
-Account information as a leaf.
+Account information ia a leaf.
 Trace the branches on the Merkle tree by address and confirm whether the route can be reached.
 
 ```js
@@ -412,7 +411,7 @@ aliceStateHash = hasher.update(aliceInfo.serialize()).hex().toUpperCase();
 blockInfo = await blockRepo.search({ order: "desc" }).toPromise();
 rootHash = blockInfo.data[0].stateHashSubCacheMerkleRoots[0];
 
-//Obtaining markle information from any node, including service providers
+//Obtaining merkle information from any node, including service providers
 stateProof = await stateProofService.accountById(aliceAddress).toPromise();
 
 //Verification
@@ -451,7 +450,7 @@ hasher.update(Buffer.from(compositeHash, "hex"));
 
 pathHash = hasher.hex().toUpperCase();
 
-//stateHash(Value値)
+//stateHash(Value)
 hasher = sha3_256.create();
 hasher.update(cat.GeneratorUtils.uintToBuffer(1, 2)); //version
 hasher.update(srcAddress);
@@ -470,7 +469,7 @@ stateHash = hasher.hex();
 blockInfo = await blockRepo.search({ order: "desc" }).toPromise();
 rootHash = blockInfo.data[0].stateHashSubCacheMerkleRoots[8];
 
-//Obtaining markle information from any node, including service providers
+//Obtaining merkle information from any node, including service providers
 stateProof = await stateProofService.metadataById(compositeHash).toPromise();
 
 //Verification
@@ -527,7 +526,7 @@ stateHash = hasher.hex();
 blockInfo = await blockRepo.search({ order: "desc" }).toPromise();
 rootHash = blockInfo.data[0].stateHashSubCacheMerkleRoots[8];
 
-//Obtaining markle information from any node, including service providers
+//Obtaining merkle information from any node, including service providers
 stateProof = await stateProofService.metadataById(compositeHash).toPromise();
 
 //Verification
@@ -540,9 +539,7 @@ checkState(stateProof, stateHash, pathHash, rootHash);
 
 A simple explanation of the “Trusted Web” is the realisation of a Web where everything is platform-independent and nothing needs to be verified.
 
-What the verification in this chapter shows is that all information held by the blockchain can be verified by the hash value of the block header.
-Blockchains are based on the sharing of block headers that everyone agrees upon and the existence of full nodes that can reproduce them.
-However, it is challenging to maintain an environment to verify these in every situation where you want to utilise the blockchain.
+What the verification methods in this chapter shows is that all information held by the blockchain can be verified by the hash value of the block header. Blockchains are based on the sharing of block headers that everyone agrees upon and the existence of full nodes that can reproduce them. However, it is challenging to maintain an environment to verify these in every situation where you want to utilise the blockchain.
 
 If the latest block headers are constantly broadcast from multiple trusted institutions, this can greatly reduce the need for verification. Such an infrastructure would allow access to trusted information even in places beyond the capabilities of the blockchain, such as urban areas where tens of millions of people are densely populated, or in remote areas where base stations cannot be adequately deployed, or during wide-area network outages during disasters.
 
