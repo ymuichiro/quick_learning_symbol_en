@@ -349,7 +349,7 @@ Failure will result in the following error status.
 
 ### Account burn
 
-Using "AllowIncomingAddress" to limit funds being received only from a specified address and then sending the entire XYM balance to another account a user can explicitly create an account that is difficult to operate on its own, even with the  private key. (Note, it possibly to be authorised by a node whose minimum fee is 0.)
+Using "AllowIncomingAddress" to limit funds being received only from a specified address and then sending the entire XYM balance to another account a user can explicitly create an account that is difficult to operate on its own, even with the  private key. (Note, it is possibly to be authorised by a node whose minimum fee is 0.)
 
 ### Mosaic lock
 A mosaic can be issued with non-transferable settings, if the account creator prohibits the mosaic from being received by their account then the mosaic is locked and cannot be moved from the recipient's account.
