@@ -1,13 +1,11 @@
 # 12.Offline Signatures
 
-The chapter on Lock, explained the Lock transactions with a hash value specification and the Aggregate transaction, which collects multiple signatures (online signatures).  
+The chapter on Locks, explained the Lock transactions with a hash value specification and the Aggregate transaction, which collects multiple signatures (online signatures).  
 This chapter explains offline signing, which involves collecting signatures in advance and announcing the transaction to the node.
 
 ## Procedure
 
-Alice originates, creates and signs the transaction.  
-Then Bob signs it and returns it to Alice.  
-Finally, Alice combines the transactions and announces them to the network.
+Alice creates and signs the transaction. Then Bob signs it and returns it to Alice. Finally, Alice combines the transactions and announces them to the network.
 
 ## 12.1 Transaction creation
 
@@ -47,14 +45,13 @@ signedPayload = signedTx.payload;
 console.log(signedPayload);
 ```
 
-###### Sample outlet
+###### Sample output
 
 ```js
 >580100000000000039A6555133357524A8F4A832E1E596BDBA39297BC94CD1D0728572EE14F66AA71ACF5088DB6F0D1031FF65F2BBA7DA9EE3A8ECF242C2A0FE41B6A00A2EF4B9020E5C72B0D5946C1EFEE7E5317C5985F106B739BB0BC07E4F9A288417B3CD6D26000000000198414100AF000000000000D4641CD902000000306771D758886F1529F9B61664B0450ED138B27CC5E3AE579C16D550EDEE5791B00000000000000054000000000000000E5C72B0D5946C1EFEE7E5317C5985F106B739BB0BC07E4F9A288417B3CD6D26000000000198544198A1BE13194C0D18897DD88FE3BC4860B8EEF79C6BC8C8720400000000000000007478310000000054000000000000003C4ADF83264FF73B4EC1DD05B490723A8CFFAE1ABBD4D4190AC4CAC1E6505A5900000000019854419850BF0FD1A45FCEE211B57D0FE2B6421EB81979814F629204000000000000000074783200000000
 ```
 
-Sign and output signedHash,signedPayload.  
-Pass signedPayload to Bob to prompt him to sign.
+Sign and output signedHash, signedPayload. Pass signedPayload to Bob to prompt him to sign.
 
 ## 12.2 Cosignature by Bob
 
@@ -100,14 +97,13 @@ res = tx.signer.verifySignature(
 console.log(res);
 ```
 
-###### Sample outlet
+###### Sample output
 
 ```js
 > true
 ```
 
-It has been verified that the payload is signed by the signer, i.e. Alice.
-Then Bob cosigns.
+It has been verified that the payload is signed by the signer Alice, then Bob co-signs.
 
 ```js
 bobSignedTx = sym.CosignatureTransaction.signTransactionPayload(
@@ -119,13 +115,12 @@ bobSignedTxSignature = bobSignedTx.signature;
 bobSignedTxSignerPublicKey = bobSignedTx.signerPublicKey;
 ```
 
-Bob signs with the signatureCosignatureTransaction  and outputs bobSignedTxSignature,bobSignedTxSignerPublicKey then returns it to Alice.  
-If Bob can align all the signatures, Bob can also make the announcement without having to return it to Alice.
+Bob signs with the signatureCosignatureTransaction and outputs bobSignedTxSignature, bobSignedTxSignerPublicKey then returns these to Alice.  
+If Bob can create all of the signatures then Bob can also make the announcement without having to return it to Alice.
 
 ## 12.3 Announcement by Alice
 
-Alice receives bobSignedTxSignature,bobSignedTxSignerPublicKey from Bob.  
-Also, prepare a signedPayload created by Alice herself in advance.
+Alice receives bobSignedTxSignature, bobSignedTxSignerPublicKey from Bob. Also, prepare a signedPayload created by Alice herself in advance.
 
 ```js
 signedHash = sym.Transaction.createTransactionHash(
@@ -184,13 +179,12 @@ await txRepo.announce(resignedTx).toPromise();
 
 ## 12.4 Tips for use
 
-### Beyond the market place
+### Beyond the marketplace
 
 Unlike Bonded Transactions, there is no need to pay fees (10XYM) for hashlocks.  
 If the payload can be shared, the seller can create payloads for all possible potential buyers and wait for negotiations to start.
 (Exclusion control should be used, e.g. by mixing only one existing receipt NFT into the Aggregate Transaction, so that multiple transactions are not executed separately).
 There is no need to build a dedicated marketplace for these negotiations.
-Users can use a social networking timeline as a marketplace, or develop a one-time marketplace at any time or space as required.
+Users can use a social networking timeline as a marketplace, or develop a one-time marketplace at any time or in any space as required.
 
-Just be careful of spoofed hash signature requests, as signatures are exchanged offline.  
-(Always generate and sign a hash from a verifiable payload).
+Just be careful of spoofed hash signature requests, as signatures are exchanged offline (always generate and sign a hash from a verifiable payload).
