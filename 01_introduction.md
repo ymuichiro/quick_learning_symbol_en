@@ -6,7 +6,7 @@ This manual was designed as a practical resource for people looking to learn and
 
 ## Target Audience
 
-- Newcomers to the Blockchain space who are looking to better understand the Symbol blockchain and experiment with it.
+- Newcomers to the Blockchain space who are looking to better understand the Symbol blockchain and experiment with it
 - Blockchain enthusiasts looking for practical use cases with examples
 - Educators & content producers seeking to understand and describe the Symbol blockchain or specific aspects of it
 - Anyone curious about how easy it is to build on Symbol
