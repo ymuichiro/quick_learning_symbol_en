@@ -18,10 +18,10 @@
 
 ### [3.Account](./03_account.md)
 
-- [3.1 Account](03_account.md#31-Creating an account)
-- [3.2 A TransferTransaction to another account](03_account.md#32-A TransferTransaction to another account)
-- [3.3 Check account information](03_account.md#33-Check account information)
-- [3.4 Tips for use](https://github.com/xembook/quick_learning_symbol/blob/main/03_account.md#34-%E7%8F%BE%E5%A0%B4%E3%81%A7%E4%BD%BF%E3%81%88%E3%82%8B%E3%83%92%E3%83%B3%E3%83%88)
+- [3.1 Account](03_account.md#31-creating-an-account)
+- [3.2 A TransferTransaction to another account](03_account.md#32-a-transfertransaction-to-another-account)
+- [3.3 Check account information](03_account.md#33-check-account-information)
+- [3.4 Tips for use](03_account.md#34-tips-for-use)
 
 ### [4.Transaction](./04_transaction.md)
 
