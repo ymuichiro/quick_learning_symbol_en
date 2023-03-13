@@ -65,7 +65,7 @@ mosaicChangeTx = sym.MosaicSupplyChangeTransaction.create(
 ```
 If supplyMutable:false, the quantity can only be changed if the entire supply of the mosaic is in the issuers account.
 If divisibility > 0, define it as an integer value with the smallest unit being 1.
-（Specify 100 if you want to create 1.00 with divisibility:2）
+（Specify divisibility:2 if you want to value 100 units as 1.00）
 
 MosaicSupplyChangeAction is as follows.
 ```js
